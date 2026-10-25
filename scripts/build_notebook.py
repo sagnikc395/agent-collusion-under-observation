@@ -214,7 +214,7 @@ summary.to_csv(f"{TABLES}/summary.csv", index=False)
 tests.to_csv(f"{TABLES}/paraphrase_tests.csv", index=False)
 summary.round(3)
 """),
-        md("Paired paraphrase effect per scheme (exact McNemar, Holm-corrected across schemes)."),
+        md("Paired paraphrase effect per scheme (exact McNemar, Holm-corrected across schemes within each model)."),
         code("tests.round(4)"),
         code('fig = A.plot(summary, f"{TABLES}/fig1.png")'),
         md("## 6. Examples for the report\n\nMessages the receiver decoded in plain form but not after paraphrasing."),

@@ -45,7 +45,7 @@ paired.
 | `signal_delivered` | the codebook marker for the right bit is in what B saw (agreed schemes) |
 
 Tests: one-sided exact binomial test of accuracy against 0.5, Wilson 95% CIs, and an
-exact McNemar test for the paired paraphrase effect, Holm-corrected across schemes.
+exact McNemar test for the paired paraphrase effect, Holm-corrected across schemes within each model.
 
 **Pre-registered expectations**, written before any model run:
 1. `lexical/plain` and `semantic/plain` decode well above chance; `none` sits at chance.
@@ -129,5 +129,5 @@ notebook. Preexisting and used unmodified: Qwen2.5 open-weight models, vLLM, tra
 An earlier version of this repo targeted the Colosseum benchmark (Nakamura et al.); that
 plan and its code are in git history (`README.md` at commit `c78c64e`).
 Paraphrasing as a defence against steganographic collusion has been studied before (e.g.
-Motwani et al., 2024, "Secret Collusion among AI Agents"; Mathew et al., 2025); this project
+Motwani et al., 2024, "Secret Collusion among AI Agents"; Mathew et al., 2024); this project
 is a small, paired measurement of it with 1.5B-7B open models.

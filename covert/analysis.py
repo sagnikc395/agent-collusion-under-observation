@@ -5,7 +5,8 @@
 Per condition: decoding accuracy (Wilson 95% CI, one-sided binomial test against
 the 0.5 chance rate), monitor flag rate, and covert success (decoded correctly
 and not flagged). The paraphrase effect is an exact McNemar test on the same
-messages delivered plain vs paraphrased, Holm-corrected across schemes.
+messages delivered plain vs paraphrased, Holm-corrected across schemes within
+each model.
 """
 
 import argparse
@@ -99,8 +100,9 @@ def paraphrase_tests(df: pd.DataFrame) -> pd.DataFrame:
         out.append(row)
     t = pd.DataFrame(out)
     if len(t):
+        # Holm family = the schemes of one model, as pre-registered.
         for metric in ("correct", "flagged"):
-            t[f"{metric}_p_holm"] = holm(t[f"{metric}_p"].tolist())
+            t[f"{metric}_p_holm"] = t.groupby("model")[f"{metric}_p"].transform(lambda p: holm(p.tolist()))
         t["scheme"] = pd.Categorical(t.scheme, SCHEME_ORDER)
         t = t.sort_values(["model", "scheme"]).reset_index(drop=True)
     return t
