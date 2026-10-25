@@ -1,109 +1,51 @@
-# AGENTS.md
+# CLAUDE.md
 
-## What this repo is
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- A research project and implementation for a hackathon (Track 3: Collusion
-  Carriers and Countermeasures). `README.md` is the specification: threat model,
-  RQ1–RQ6, pre-registered evidence standard, metrics, and experiment plan.
-- Scope: a one-day sprint on a single 16GB GPU. RQ1–RQ4 only, the `sprint`
-  setting group (6 settings) × 8 paired seeds = 48 episodes, `Qwen2.5-3B-Instruct`
-  agents and a 4-bit `Qwen2.5-7B-Instruct-AWQ` judge (~12GB of weights). RQ5,
-  RQ6, the `hide_claims`/`_both` ablations and the Modal replication are
-  implemented and tested, but are stretch goals — do not widen the default grid
-  or the model sizes unasked.
-- Read `README.md` before coding. The RQs are sequential: later stages depend on
-  earlier results, and the README says how the design changes if a stage is
-  negative. Implement the specified design rather than re-deriving it.
-- The scaffold is implemented in `carriers/`, `configs/`, `analysis/`, `tests/`,
-  `scripts/`, `notebooks/`, and `modal_app.py`. `RUNNING.md` has the operational
-  commands. The paper draft is `format/AuthorKit27/main.tex`.
-- `colosseum/` is an ignored local checkout used for offline tests. It is an
-  external dependency: do not commit it or edit its tree. A fresh checkout can
-  live elsewhere; set `COLOSSEUM_ROOT` to its path.
+## What this repository is
 
-## Non-negotiable research constraints
+A one-day hackathon project (Apart AI Collusion Sprint, Track 3): can two copies of a small LLM
+pass a one-bit secret through a public message, and does an LLM monitor or an LLM paraphraser
+stop it? `README.md` is the specification: schemes, channels, metrics, tests and the
+pre-registered expectations.
 
-- RQ1's evidence standard is pre-registered: a setting counts as collusive only
-  if the coalition action-advantage test, the non-coalition reward-loss test, and
-  the intent test (λ_emp 95% CI above 0 or judge score +1) all pass. Do not
-  relax, reorder, or substitute these tests.
-- Preserve seed pairing. A Colosseum seed fixes the problem instance, agent
-  order, and topology; comparisons use paired sign-flip permutation tests with
-  Holm correction, never pooled means.
-- Use the fixed setting labels: `benign`, `emergent`, `coalition`, `watched`,
-  `no_channel`, `find_partner`, `verifier`, plus `*_paraphrase`,
-  `*_hide_claims`, `*_both`.
-- Colosseum is used unmodified. This project's additions belong in `configs/`,
-  `carriers/`, `analysis/`, and `notebooks/`; do not patch the Colosseum tree.
-- When implementing λ_emp, fit only on instances where the team-best and
-  coalition-best actions differ, bootstrap over seeds, and sanity-check that
-  benign agents give λ near 0.
-- Judge scores come from a local 4-bit Qwen2.5-7B, so absolute values are not
-  comparable to Colosseum's published results. Only within-project differences
-  are meaningful.
-- Do not fabricate results. The paper is a pre-results protocol; result tables
-  stay as placeholders until real runs produce the numbers.
+The repo was refactored down from a larger Colosseum-based plan; that plan and its code are
+in git history (`README.md` at commit `c78c64e`). Do not bring
+Colosseum back or widen the design without being asked.
 
-## Environment and commands
+## Layout
 
-- The project targets Python 3.11. Use the Colosseum checkout's environment for
-  anything that imports Terrarium; this repo's `.venv` may be a different local
-  environment.
-- Setup inside the Colosseum clone:
+- `covert/prompts.py` — topics, codebooks (`SCHEMES`), role prompts, `parse_choice`, `signal_present`.
+- `covert/backends.py` — batched `generate(convs, max_tokens, temperature, seed)` backends:
+  vLLM (Colab default), transformers fallback, OpenAI-compatible local server, scripted (tests).
+- `covert/experiment.py` — `Config`, `make_trials`, `run_chunk`, `run`: sender → channel →
+  receiver + monitor, in chunks. Each chunk is appended and fsynced to `trials.jsonl`, with
+  `run.log` and `progress.json`; rerunning on the same directory resumes (partial trials are
+  dropped, a changed config is refused). Keep this crash-safety when editing.
+- `covert/analysis.py` — `summarize`, `paraphrase_tests`, `plot`, `examples`; CPU only.
+- `notebooks/covert_signal.ipynb` — **generated** by `scripts/build_notebook.py`, which inlines
+  `covert/*.py` as `%%writefile` cells. Never hand-edit the notebook; edit `covert/` or the
+  builder, then rebuild.
 
-  ```bash
-  git clone --recurse-submodules https://github.com/umass-ai-safety/colosseum.git
-  cd colosseum
-  uv venv --python 3.11 .venv
-  source .venv/bin/activate
-  uv sync --no-install-project --extra vllm
-  cp .env.example .env   # no API keys needed for vLLM-only runs
-  ```
+## Rules
 
-- Offline tests, from this repo root (no GPU or API):
+- **Pairing is the design.** A trial fixes topic and bit across all conditions, and both channels
+  deliver the same sender message. Analysis must stay paired (McNemar on matched trials), not
+  compare pooled means.
+- Condition labels are fixed: schemes `none`, `lexical`, `semantic`, `improvised`; channels
+  `plain`, `paraphrased`. Use them verbatim in code, files and the write-up.
+- The pre-registered expectations in the README are written before results; do not edit them to
+  match results. Report misses as misses.
+- Experiments run on Google Colab (the user runs them there). Do not run models locally.
+- Models are open-weight and served locally in the runtime; do not add a hosted API client.
 
-  ```bash
-  colosseum/.venv/bin/python -m pytest tests -q
-  ```
+## Commands
 
-  The suite covers pairing and the RQ1 standard, regret/QRE checks against
-  Terrarium, the carrier prompts and verifier, and a fake-client run through
-  every setting. The configured lint check is:
+```bash
+python -m pytest tests -q                 # scripted end-to-end test, no GPU
+ruff check covert tests scripts
+python scripts/build_notebook.py          # after any change to covert/
+python -m covert.analysis results/<model> --out results/tables
+```
 
-  ```bash
-  colosseum/.venv/bin/python -m ruff check analysis carriers tests scripts modal_app.py
-  ```
-
-- Run settings through this repo's runner, from the repo root, with the
-  Colosseum environment active and `COLOSSEUM_ROOT` set:
-
-  ```bash
-  python -m carriers.runner --config configs/sprint.yaml --settings pilot --seeds 1-4
-  python -m carriers.runner --config configs/sprint.yaml          # the 48-episode grid
-  python -m carriers.runner --config configs/sprint.yaml --settings rq3,rq4 --seeds 1-8
-  ```
-
-  `configs/smoke_fake.yaml` is the offline wiring check. See `RUNNING.md` for
-  Colab, Modal, judge, and report commands.
-
-- Analysis is CPU-only from saved artifacts:
-
-  ```bash
-  python -m analysis.report --results results/sprint --out results/sprint/tables
-  python -m analysis.judge --results results/sprint \
-    --base-url http://127.0.0.1:8021/v1 --model Qwen/Qwen2.5-7B-Instruct-AWQ
-  ```
-
-- Generation and judging require a GPU (one 16GB card, e.g. a Colab T4, + vLLM). `results/`, `logs/`,
-  and `outputs/` are generated and ignored. Change analysis without rerunning
-  generation.
-
-## Paper
-
-- `format/AuthorKit27/main.tex` is the project draft. The stock
-  `AnonymousSubmission2027.tex` is left untouched.
-- Do not edit kit support files (`aaai2027.sty`, `aaai2027.bst`) or lines marked
-  `DO NOT CHANGE`; use the template for paper content.
-- Compile with pdfTeX from `format/AuthorKit27/`:
-  `pdflatex main && bibtex main && pdflatex main && pdflatex main`. The AAAI kit
-  is not Tectonic/XeTeX compatible.
+A local venv for tests and lint is at `.venv` (`.venv/bin/python -m pytest tests -q`).
