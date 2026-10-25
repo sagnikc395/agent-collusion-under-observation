@@ -20,7 +20,8 @@ What exists:
   `smoke_fake.yaml` (offline).
 - `notebooks/colab_runner.ipynb`, `modal_app.py`, `scripts/start_vllm.sh`, `tests/`.
 - `papers/2602.15198v2.pdf` — the Colosseum paper (Nakamura et al., NeurIPS 2026), which this project builds on.
-- `format/AuthorKit27/` — AAAI 2027 LaTeX author kit (unmodified vendor files; the writeup target).
+- `format/AuthorKit27/` — AAAI 2027 LaTeX author kit; the project draft is `main.tex`, and the stock
+  `AnonymousSubmission2027.tex` and kit support files are left untouched.
 
 ## Working on this repo
 
@@ -36,7 +37,7 @@ reorder, or substitute these tests when writing analysis code — the pre-regist
 (`github.com/umass-ai-safety/colosseum`, with `git submodule update --init --recursive` for CoLLAB).
 Its environment (`JiraTicketEnvironment`), metrics, and judge prompts are taken as-is; this project's
 contribution is new configs, prompt variants, carrier ablations, and analysis on top. Changes to
-coalition behavior go in this repo's planned `carriers/` module (prompts, verifier, paraphraser,
+coalition behavior go in this repo's `carriers/` module (prompts, verifier, paraphraser,
 claim-hiding), not in Colosseum's tree.
 
 **Seeds are paired across settings.** In Colosseum a seed fixes the problem instance, agent order and
@@ -99,4 +100,5 @@ environment needs a contested ticket; `lambda_fits.csv` reports the count per se
 near zero the intent test falls back to the judge delta, which RQ1 permits.
 
 Tests: `colosseum/.venv/bin/python -m pytest tests -q` (needs pytest in that venv:
-`VIRTUAL_ENV=colosseum/.venv uv pip install pytest`). There is no lint setup; Colosseum uses ruff.
+`VIRTUAL_ENV=colosseum/.venv uv pip install pytest`). Lint with
+`colosseum/.venv/bin/python -m ruff check analysis carriers tests scripts modal_app.py`.

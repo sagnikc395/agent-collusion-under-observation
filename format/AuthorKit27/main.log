@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  24 OCT 2026 21:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  24 OCT 2026 21:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -443,14 +443,14 @@ usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}
 
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 75.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 77.
 
 
 (/private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/roo
 t/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 75.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 77.
 
 
 (/private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/roo
@@ -459,89 +459,119 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 101--101
-[]\T1/ntxtlf/m/n/9 What hap-pens un-der
+Underfull \hbox (badness 10000) in paragraph at lines 105--106
+[]\T1/ntxtlf/m/n/9 Pre-registered
  []
 
 
-Underfull \hbox (badness 1303) in paragraph at lines 101--102
-[]\T1/ntxtlf/m/n/9 Coalition vs. watched
+Underfull \hbox (badness 3439) in paragraph at lines 105--106
+\T1/ntxtlf/m/n/9 three-test stan-dard
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 102--103
-[]\T1/ntxtlf/m/n/9 No-channel coali-tion,
+Underfull \hbox (badness 2591) in paragraph at lines 106--107
+[]\T1/ntxtlf/m/n/9 Benign vs. emer-
  []
 
 
-Underfull \hbox (badness 6141) in paragraph at lines 102--103
-\T1/ntxtlf/m/n/9 then para-phrase and
+Underfull \hbox (badness 10000) in paragraph at lines 107--108
+[]\T1/ntxtlf/m/n/9 Coalition vs.
  []
 
 
-Underfull \hbox (badness 7291) in paragraph at lines 103--104
-[]\T1/ntxtlf/m/n/9 No chan-nel, part-ner
+Underfull \hbox (badness 6961) in paragraph at lines 108--109
+[]\T1/ntxtlf/m/n/9 No-channel coali-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 103--104
+Underfull \hbox (badness 10000) in paragraph at lines 108--109
+\T1/ntxtlf/m/n/9 tion, then para-
+ []
+
+
+Underfull \hbox (badness 1028) in paragraph at lines 108--109
+\T1/ntxtlf/m/n/9 phrase and claim-
+ []
+
+
+Underfull \hbox (badness 3281) in paragraph at lines 109--110
 \T1/ntxtlf/m/n/9 un-named; partner-
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 116--116
-[]\T1/ntxtlf/m/n/9 Collusion
- []
-
-LaTeX Font Info:    Trying to load font information for T1+pcr on input line 11
-8.
+LaTeX Font Info:    Trying to load font information for T1+pcr on input line 12
+5.
 
 (/private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/roo
 t/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/t1pcr.fd
 File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
-Underfull \hbox (badness 10000) in paragraph at lines 119--120
+Underfull \hbox (badness 10000) in paragraph at lines 126--127
 []\T1/ntxtlf/m/n/9 Colosseum's
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 119--120
+Underfull \hbox (badness 10000) in paragraph at lines 126--127
 \T1/ntxtlf/m/n/9 emergent-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 119--120
-\T1/ntxtlf/m/n/9 collusion
+Underfull \hbox (badness 1661) in paragraph at lines 127--128
+[]\T1/ntxtlf/m/n/9 Known col-lud-ing
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 121--121
+Underfull \hbox (badness 10000) in paragraph at lines 128--128
 []\T1/ntxtlf/m/n/9 Simple +
  []
 
 
-Underfull \hbox (badness 2409) in paragraph at lines 123--123
-[]\T1/ntxtlf/m/n/9 Partner un-
+Underfull \hbox (badness 3884) in paragraph at lines 128--129
+[]\T1/ntxtlf/m/n/9 Does mon-i-tor-ing
  []
 
 
-Underfull \hbox (badness 2573) in paragraph at lines 123--124
+Underfull \hbox (badness 10000) in paragraph at lines 129--129
+[]\T1/ntxtlf/m/n/9 Simple,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 129--129
+\T1/ntxtlf/m/n/9 part-ner
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 130--130
+[]\T1/ntxtlf/m/n/9 Simple,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 130--130
+\T1/ntxtlf/m/n/9 part-ner
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 130--131
 []\T1/ntxtlf/m/n/9 Can col-lud-ers
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 123--124
+Underfull \hbox (badness 10000) in paragraph at lines 130--131
 \T1/ntxtlf/m/n/9 iden-tify each
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--124
+Underfull \hbox (badness 10000) in paragraph at lines 131--131
 []\T1/ntxtlf/m/n/9 Simple +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--125
-\T1/ntxtlf/m/n/9 agent in-ter-
+Underfull \hbox (badness 1112) in paragraph at lines 134--134
+[]\T1/ntxtlf/m/n/10 Table 2: |Base set-tings and the car-rier each one re-
+ []
+
+
+Underfull \hbox (badness 4132) in paragraph at lines 134--134
+\T1/ntxtlf/m/n/10 moves or adds. The RQ4 ab-la-tion la-bels ap-pend
  []
 
 
@@ -549,181 +579,209 @@ Underfull \hbox (badness 10000) in paragraph at lines 124--125
 [2]
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 185--185
+
+[3{/private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/r
+oot/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc}]
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
 []\T1/ntxtlf/m/n/9 Action
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 188--188
+Underfull \hbox (badness 10000) in paragraph at lines 202--202
 []\T1/ntxtlf/m/n/9 Does not
  []
 
 
-Underfull \hbox (badness 1082) in paragraph at lines 189--189
+Underfull \hbox (badness 1082) in paragraph at lines 203--203
 []\T1/ntxtlf/m/n/9 On pa-
  []
 
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.95pt on input line 200.
+(Font)              scaled to size 10.95pt on input line 215.
 LaTeX Font Info:    Font shape `T1/ntxtlf/b/n' will be
-(Font)              scaled to size 10.95pt on input line 200.
+(Font)              scaled to size 10.95pt on input line 215.
 
 
-[3{/private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/r
-oot/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc}]
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 239--240
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 249--249
 []\T1/ntxtlf/m/n/9 If ad-van-tage
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
+Underfull \hbox (badness 10000) in paragraph at lines 251--251
 []\T1/ntxtlf/m/n/9 Paraphrase
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
-[]\T1/ntxtlf/m/n/9 Separate
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
-\T1/ntxtlf/m/n/9 model call,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
-\T1/ntxtlf/m/n/9 tem-per-a-ture
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 241--241
-\T1/ntxtlf/m/n/9 IDs and
- []
-
-
-Underfull \hbox (badness 5403) in paragraph at lines 241--241
+Underfull \hbox (badness 10000) in paragraph at lines 251--251
 []\T1/ntxtlf/m/n/9 Wording of
  []
 
 
-Underfull \hbox (badness 3058) in paragraph at lines 241--241
+Underfull \hbox (badness 10000) in paragraph at lines 251--251
 \T1/ntxtlf/m/n/9 pub-lic mes-
  []
 
 
-Underfull \hbox (badness 7888) in paragraph at lines 242--242
+Underfull \hbox (badness 2951) in paragraph at lines 251--251
+\T1/ntxtlf/m/n/9 sages was a
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 251--252
+[]\T1/ntxtlf/m/n/9 Wording is
+ []
+
+
+Underfull \hbox (badness 2582) in paragraph at lines 252--252
 []\T1/ntxtlf/m/n/9 Hide ear-lier
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 242--242
-\T1/ntxtlf/m/n/9 hide which
+Underfull \hbox (badness 1168) in paragraph at lines 252--252
+\T1/ntxtlf/m/n/9 i-bil-ity of ac-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 242--242
-\T1/ntxtlf/m/n/9 tick-ets ear-
+Underfull \hbox (badness 4582) in paragraph at lines 252--252
+\T1/ntxtlf/m/n/9 tions was a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 242--242
-\T1/ntxtlf/m/n/9 lier agents
+Underfull \hbox (badness 2689) in paragraph at lines 252--253
+[]\T1/ntxtlf/m/n/9 Action vis-i-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 242--242
-[]\T1/ntxtlf/m/n/9 Order and
+Underfull \hbox (badness 2884) in paragraph at lines 253--253
+[]\T1/ntxtlf/m/n/9 Both car-ri-ers
  []
 
 
-Underfull \hbox (badness 3919) in paragraph at lines 242--242
-\T1/ntxtlf/m/n/9 vis-i-bil-ity of
- []
-
-
-Underfull \hbox (badness 2735) in paragraph at lines 243--243
+Underfull \hbox (badness 10000) in paragraph at lines 253--253
 \T1/ntxtlf/m/n/9 were nec-es-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--244
+Underfull \hbox (badness 10000) in paragraph at lines 253--254
 []\T1/ntxtlf/m/n/9 Remaining
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--244
+Underfull \hbox (badness 10000) in paragraph at lines 253--254
 \T1/ntxtlf/m/n/9 ad-van-tage
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--244
+Underfull \hbox (badness 2753) in paragraph at lines 253--254
 \T1/ntxtlf/m/n/9 is noise or
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 243--244
+Underfull \hbox (badness 1210) in paragraph at lines 253--254
 \T1/ntxtlf/m/n/9 an un-named
  []
 
 
 
-[4]
-Underfull \hbox (badness 10000) in paragraph at lines 278--278
-[]\T1/ntxtlf/m/n/9 Non-
+
+Underfull \hbox (badness 10000) in paragraph at lines 279--280
+[]\T1/ntxtlf/m/n/9 Watching
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 278--278
-[]$\OML/cmm/m/it/9 ^^U[]$
+Underfull \hbox (badness 2042) in paragraph at lines 280--281
+[]\T1/ntxtlf/m/n/9 The coali-tion
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 297--297
-[]\T1/ntxtlf/m/n/9 Non-coal.
+Underfull \hbox (badness 5985) in paragraph at lines 280--281
+\T1/ntxtlf/m/n/9 stops talk-ing
  []
 
 
-Underfull \hbox (badness 7133) in paragraph at lines 320--320
-[]\T1/ntxtlf/m/n/9 Partner-identification ac-cu-
+Underfull \hbox (badness 10000) in paragraph at lines 281--281
+[]\T1/ntxtlf/m/n/9 Holds, and
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 322--322
-[]\T1/ntxtlf/m/n/9 Coalition ad-van-tage, un-
+Underfull \hbox (badness 10000) in paragraph at lines 281--281
+\T1/ntxtlf/m/n/9 RQ4 at-
  []
 
 
+Underfull \hbox (badness 7081) in paragraph at lines 281--281
+\T1/ntxtlf/m/n/9 tributes the
+ []
+
+
+Underfull \hbox (badness 1874) in paragraph at lines 281--281
+\T1/ntxtlf/m/n/9 gain to an-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 281--282
+[]\T1/ntxtlf/m/n/9 Coordination
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 281--282
+\T1/ntxtlf/m/n/9 moved off
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 281--282
+\T1/ntxtlf/m/n/9 the watched
+ []
 
 
 
 [5]
+Underfull \hbox (badness 10000) in paragraph at lines 325--325
+[]\T1/ntxtlf/m/n/9 posts
+ []
+
+
+
+
+
+[6]
 
 (./main.bbl
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/it' will be
 (Font)              scaled to size 10.0pt on input line 8.
 
+Underfull \vbox (badness 2277) has occurred while \output is active []
+
+
+
+[7]
 Underfull \hbox (badness 1622) in paragraph at lines 20--26
 []\T1/ntxtlf/m/n/10 Mathew, Y.; Matthews, O.; Mc-Carthy, R.; Velja, J.;
  []
 
 )
 
-[6] (./main.aux)
+
+
+[8
+
+] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 7186 strings out of 474662
- 124652 string characters out of 5751110
- 532333 words of memory out of 5000000
- 30103 multiletter control sequences out of 15000+600000
+ 7192 strings out of 474662
+ 124753 string characters out of 5751110
+ 529402 words of memory out of 5000000
+ 30109 multiletter control sequences out of 15000+600000
  595870 words of font info for 76 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 95i,13n,117p,1078b,396s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 95i,13n,117p,1375b,398s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basictex/r
 oot/usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx1
 0.pfb></private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp80000gn/T/opencode/basict
@@ -759,10 +817,10 @@ ykjp80000gn/T/opencode/basictex/root/usr/local/texlive/2025basic/texmf-dist/fon
 ts/type1/public/newtx/ztmr.pfb></private/var/folders/kd/w5v_dnvx2w72ksjdjmhykjp
 80000gn/T/opencode/basictex/root/usr/local/texlive/2025basic/texmf-dist/fonts/t
 ype1/public/newtx/ztmri.pfb>
-Output written on main.pdf (6 pages, 277319 bytes).
+Output written on main.pdf (8 pages, 283887 bytes).
 PDF statistics:
- 110 PDF objects out of 1000 (max. 8388607)
- 67 compressed objects within 1 object stream
+ 118 PDF objects out of 1000 (max. 8388607)
+ 73 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

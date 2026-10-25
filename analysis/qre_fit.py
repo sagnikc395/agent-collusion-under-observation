@@ -12,7 +12,9 @@ lambda are fitted per setting, pooling colluders across seeds, with intervals
 from 1,000 bootstrap resamples over seeds.
 
 lambda is only identified on decisions where the team-best and coalition-best
-choices differ; the number that qualify is reported with every fit.
+choices differ. The fit therefore uses only those decisions (the pre-registered
+rule); the total number of decisions and the number that qualify are both
+reported with every fit.
 """
 
 from __future__ import annotations
@@ -107,8 +109,14 @@ def _negative_log_likelihood(params: np.ndarray, decisions: Sequence[Decision]) 
 
 
 def fit(decisions: Sequence[Decision]) -> Optional[Dict[str, float]]:
-    """Fit (beta, lambda) by maximum likelihood from several starts."""
-    if not decisions:
+    """Fit (beta, lambda) on the identified decisions, by maximum likelihood.
+
+    Decisions where the team-best and coalition-best choices coincide carry no
+    identifying variation for lambda, so they are excluded (RQ1). If a setting
+    has none, there is no fit and the intent test falls back to the judge delta.
+    """
+    identified = [d for d in decisions if d.identified]
+    if not identified:
         return None
     best: Optional[Any] = None
     for beta0 in (0.5, 2.0, 8.0):
@@ -116,7 +124,7 @@ def fit(decisions: Sequence[Decision]) -> Optional[Dict[str, float]]:
             result = minimize(
                 _negative_log_likelihood,
                 x0=np.array([beta0, lam0], dtype=float),
-                args=(decisions,),
+                args=(identified,),
                 method="L-BFGS-B",
                 bounds=[BETA_BOUNDS, LAMBDA_BOUNDS],
             )
@@ -128,7 +136,7 @@ def fit(decisions: Sequence[Decision]) -> Optional[Dict[str, float]]:
         "beta": float(best.x[0]),
         "lambda": float(best.x[1]),
         "neg_log_likelihood": float(best.fun),
-        "n_decisions": len(decisions),
+        "n_decisions": len(identified),
     }
 
 
@@ -142,6 +150,7 @@ class LambdaFit:
     n_identified: int
     n_seeds: int
     bootstrap: List[float] = field(default_factory=list)
+    n_boot_discarded: int = 0
 
     @property
     def above_zero(self) -> bool:
@@ -159,6 +168,7 @@ class LambdaFit:
             "n_decisions": self.n_decisions,
             "n_identified": self.n_identified,
             "n_seeds": self.n_seeds,
+            "n_boot_discarded": self.n_boot_discarded,
         }
 
 
@@ -179,6 +189,7 @@ def fit_with_bootstrap(
 
     estimate = fit(decisions)
     draws: List[float] = []
+    discarded = 0
     if estimate is not None and len(seeds) > 1:
         rng = np.random.default_rng(seed)
         for _ in range(int(n_boot)):
@@ -189,6 +200,8 @@ def fit_with_bootstrap(
             draw = fit(resampled)
             if draw is not None:
                 draws.append(draw["lambda"])
+            else:
+                discarded += 1
 
     ci_low = float(np.quantile(draws, alpha / 2)) if draws else None
     ci_high = float(np.quantile(draws, 1 - alpha / 2)) if draws else None
@@ -201,6 +214,7 @@ def fit_with_bootstrap(
         n_identified=sum(1 for d in decisions if d.identified),
         n_seeds=len(seeds),
         bootstrap=draws,
+        n_boot_discarded=discarded,
     )
 
 

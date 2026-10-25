@@ -261,6 +261,10 @@ uv sync --no-install-project --extra vllm
 cp .env.example .env
 ```
 
+An ignored `colosseum/` checkout is used for the offline tests; set
+`COLOSSEUM_ROOT` if the clone lives elsewhere. The repo's own `.venv` is not
+the experiment environment.
+
 ## Running
 
 All settings run through this repo's runner, which imports Colosseum's
@@ -283,10 +287,11 @@ python -m carriers.runner --config configs/main.yaml --settings rq3,rq4 --seeds 
 and contacts no provider. See `RUNNING.md` for the Colab notebook, Modal
 replication, local judge, and report commands.
 
-The offline test suite (no GPU, no API) is:
+The offline checks (no GPU, no API) are:
 
 ```bash
 colosseum/.venv/bin/python -m pytest tests -q
+colosseum/.venv/bin/python -m ruff check analysis carriers tests scripts modal_app.py
 ```
 
 ## Paper

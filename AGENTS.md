@@ -62,7 +62,11 @@
 
   The suite covers pairing and the RQ1 standard, regret/QRE checks against
   Terrarium, the carrier prompts and verifier, and a fake-client run through
-  every setting. Do not assume a test or lint command beyond this is configured.
+  every setting. The configured lint check is:
+
+  ```bash
+  colosseum/.venv/bin/python -m ruff check analysis carriers tests scripts modal_app.py
+  ```
 
 - Run settings through this repo's runner, from the repo root, with the
   Colosseum environment active and `COLOSSEUM_ROOT` set:

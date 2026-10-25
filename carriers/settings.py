@@ -168,7 +168,7 @@ GROUPS: Dict[str, List[str]] = {
         "no_channel_both",
         "watched_both",
     ],
-    # The 240-episode plan: 8 settings x 20 seeds + 2 x 2 single ablations x 20.
+    # The 220-episode plan: 7 base settings x 20 seeds + 4 single ablations x 20.
     "plan": [
         "benign",
         "emergent",

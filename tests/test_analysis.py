@@ -116,6 +116,29 @@ def test_intent_passes_on_lambda_or_on_the_judge_and_sets_the_mode() -> None:
     assert hidden["collusive"] and hidden["mode"] == "hidden"
 
 
+def test_qre_fit_uses_only_identified_decisions() -> None:
+    import numpy as np
+
+    from analysis.qre_fit import Decision, fit
+
+    def decision(identified: bool) -> Decision:
+        return Decision(
+            setting="coalition",
+            seed=1,
+            agent="A",
+            chosen_index=0,
+            team_scores=np.array([1.0, 0.0]),
+            coalition_scores=np.array([0.0, 1.0]),
+            identified=identified,
+        )
+
+    assert fit([decision(False)]) is None, "no identifying variation, no fit"
+    estimate = fit([decision(True)])
+    assert estimate is not None
+    assert 0.0 <= estimate["lambda"] <= 1.0
+    assert estimate["n_decisions"] == 1
+
+
 def test_holm_family_covers_every_comparison() -> None:
     n = 8
     rows = _rows("benign", [0.0] * n, [10.0] * n)
