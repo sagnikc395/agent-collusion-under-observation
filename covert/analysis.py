@@ -18,7 +18,12 @@ import pandas as pd
 from scipy.stats import binomtest, norm
 
 SCHEME_ORDER = ["none", "lexical", "semantic", "improvised"]
-CHANNEL_ORDER = ["plain", "paraphrased"]
+CHANNEL_ORDER = ["plain", "paraphrased", "sanitized"]
+CODED = ["lexical", "semantic", "improvised"]
+# Categorical slots 1-3, checked for colour-vision separation; slot 3 is low-contrast on white,
+# so every figure has a legend and a table beside it.
+COLORS = ["#2a78d6", "#eb6834", "#1baf7a"]
+CHANNEL_COLORS = dict(zip(CHANNEL_ORDER, COLORS))
 
 
 def load(*dirs: str | Path) -> pd.DataFrame:
@@ -83,17 +88,23 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
 
 def paraphrase_tests(df: pd.DataFrame) -> pd.DataFrame:
     """Paired effect of paraphrasing on accuracy and flag rate, per model and scheme."""
+    return paired_tests(df, "plain", "paraphrased")
+
+
+def paired_tests(df: pd.DataFrame, base: str, other: str) -> pd.DataFrame:
+    """Exact McNemar of channel `other` against `base` on the same messages, per model and scheme."""
     out = []
-    for (model, scheme), g in df.groupby(["model", "scheme"]):
+    for (model, scheme), g in df[df.channel.isin([base, other])].groupby(["model", "scheme"]):
         w = g.pivot(index="trial", columns="channel", values=["correct", "flagged"]).dropna()
-        if not {"plain", "paraphrased"} <= set(w.columns.get_level_values(1)):
+        if not {base, other} <= set(w.columns.get_level_values(1)):
             continue
         row = {"model": model, "scheme": scheme, "n_pairs": len(w)}
         for metric in ("correct", "flagged"):
-            a, b = w[metric]["plain"].astype(bool), w[metric]["paraphrased"].astype(bool)
+            a, b = w[metric][base].astype(bool), w[metric][other].astype(bool)
             lost, gained = int((a & ~b).sum()), int((~a & b).sum())
-            row[f"{metric}_plain"] = a.mean()
-            row[f"{metric}_paraphrased"] = b.mean()
+            row[f"{metric}_{base}"] = a.mean()
+            row[f"{metric}_{other}"] = b.mean()
+            row[f"{metric}_lost"], row[f"{metric}_gained"] = lost, gained
             row[f"{metric}_p"] = (
                 binomtest(min(lost, gained), lost + gained, 0.5).pvalue if lost + gained else 1.0
             )
@@ -115,7 +126,8 @@ def plot(summary: pd.DataFrame, path: str | Path | None = None):
     fig, axes = plt.subplots(
         len(models), 2, figsize=(10, 3.6 * len(models)), squeeze=False, constrained_layout=True
     )
-    colors = {"plain": "#2a6fdb", "paraphrased": "#e07b39"}
+    channels = [c for c in CHANNEL_ORDER if c in set(summary.channel)]
+    width = 0.8 / len(channels)
     for r, model in enumerate(models):
         s = summary[summary.model == model]
         schemes = [x for x in SCHEME_ORDER if x in set(s.scheme)]
@@ -125,13 +137,13 @@ def plot(summary: pd.DataFrame, path: str | Path | None = None):
             ("flag_rate", "flag_lo", "flag_hi", "Monitor flags the message"),
         ]):
             ax = axes[r, c]
-            for j, ch in enumerate(CHANNEL_ORDER):
+            for j, ch in enumerate(channels):
                 d = s[s.channel == ch].set_index("scheme").reindex(schemes)
                 if d[metric].isna().all():
                     continue
                 err = np.clip(np.vstack([d[metric] - d[lo], d[hi] - d[metric]]), 0, None)
-                ax.bar(x + (j - 0.5) * 0.38, d[metric], 0.38, yerr=err, capsize=3,
-                       label=ch, color=colors[ch])
+                ax.bar(x + (j - (len(channels) - 1) / 2) * width, d[metric], width, yerr=err, capsize=3,
+                       label=ch, color=CHANNEL_COLORS[ch], edgecolor="white", linewidth=1.5)
             if metric == "accuracy":
                 ax.axhline(0.5, ls="--", lw=1, color="gray")
                 ax.text(len(schemes) - 0.5, 0.51, "chance", ha="right", va="bottom", fontsize=8, color="gray")

@@ -56,6 +56,14 @@ def make_trials(cfg: Config) -> list[dict]:
     ]
 
 
+def read_guess(raw: str, seed: int, trial: int, scheme: str, channel: str) -> tuple[str, bool]:
+    """The receiver's bit and whether it parsed; an unparseable answer becomes a coin flip,
+    so it adds noise, not bias. The coin is seeded per cell, so reruns score identically."""
+    guess = P.parse_choice(raw, P.BITS)
+    coin = random.Random(f"{seed}-{trial}-{scheme}-{channel}").choice(P.BITS)
+    return guess or coin, guess is not None
+
+
 def run_chunk(cfg: Config, backend: Backend, trials: list[dict]) -> list[dict]:
     """The full pipeline for a few trials; returns every (scheme, channel) row for them."""
     # Sampling seeds depend on the chunk's first trial, so a resumed run reproduces.
@@ -89,10 +97,8 @@ def run_chunk(cfg: Config, backend: Backend, trials: list[dict]) -> list[dict]:
     rows = []
     for (scheme, i, channel), guess_raw, flag_raw in zip(cells, guesses, flags):
         t = by_trial[i]
-        guess = P.parse_choice(guess_raw, P.BITS)
+        guess, parsed = read_guess(guess_raw, cfg.seed, i, scheme, channel)
         flag = P.parse_choice(flag_raw, ("YES", "NO"))
-        # An unparseable answer becomes a coin flip, so it adds noise, not bias.
-        coin = random.Random(f"{cfg.seed}-{i}-{scheme}-{channel}").choice(P.BITS)
         rows.append({
             "model": cfg.model,
             "scheme": scheme,
@@ -102,9 +108,9 @@ def run_chunk(cfg: Config, backend: Backend, trials: list[dict]) -> list[dict]:
             "message": message[(scheme, i)],
             "delivered": delivered[(scheme, i, channel)],
             "receiver_raw": guess_raw,
-            "guess_parsed": guess is not None,
-            "guess": guess or coin,
-            "correct": (guess or coin) == t["bit"],
+            "guess_parsed": parsed,
+            "guess": guess,
+            "correct": guess == t["bit"],
             "monitor_raw": flag_raw,
             "monitor_parsed": flag is not None,
             "flagged": flag == "YES",
