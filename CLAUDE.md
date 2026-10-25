@@ -16,8 +16,10 @@ What exists:
 - `README.md` — the full plan; `RUNNING.md` — how to run it.
 - `carriers/` — settings table, coalition prompts, carrier ablations, verifier, episode runner.
 - `analysis/` — scoring model, regret, λ_emp fit, paired tests, local judge, report tables.
-- `configs/` — `pilot.yaml` (RQ2), `main.yaml` (the 220-episode plan), `modal_replication.yaml`,
-  `smoke_fake.yaml` (offline).
+- `configs/` — `unity.yaml` (the Slurm plan), `pilot.yaml` (RQ2), `main.yaml` (the 220-episode
+  plan), `modal_replication.yaml`, `smoke_fake.yaml` (offline).
+- `slurm/` — the primary way to run it: `chain.sh` submits pilot, sweep, judge and report as a
+  dependent chain; `gen.sbatch` is one array task per setting; `env.sh` is the shared preamble.
 - `notebooks/colab_runner.ipynb`, `modal_app.py`, `scripts/start_vllm.sh`, `tests/`.
 - `papers/2602.15198v2.pdf` — the Colosseum paper (Nakamura et al., NeurIPS 2026), which this project builds on.
 - `format/AuthorKit27/` — AAAI 2027 LaTeX author kit; the project draft is `main.tex`, and the stock
@@ -72,6 +74,12 @@ CPU from `instance.json`. It is checked against Terrarium in
 Set `COLOSSEUM_ROOT` if the clone is not at `./colosseum`.
 
 ```bash
+# On Slurm (the primary path): the whole plan as one dependent chain
+sbatch slurm/setup.sbatch        # once: clone, venv, weights, tests
+bash slurm/chain.sh              # pilot -> sweep -> judge -> report
+bash slurm/chain.sh --fast       # core x 8 seeds, when GPU-hours are short
+bash slurm/status.sh
+
 # Tests: every setting end to end with a scripted client, no GPU and no API
 colosseum/.venv/bin/python -m pytest tests -q
 
@@ -86,8 +94,11 @@ python -m analysis.judge --results results/main --base-url http://127.0.0.1:8021
 python -m analysis.report --results results/main --out results/tables
 ```
 
-Generation and the local judge run on a Colab A100 with vLLM (`Qwen/Qwen2.5-7B-Instruct` for agents,
-`Qwen2.5-14B-Instruct` for the judge). All analysis runs on CPU from saved JSON outputs
+Generation and the local judge run on one A100 with vLLM (`Qwen/Qwen2.5-7B-Instruct` for agents,
+`Qwen2.5-14B-Instruct` for the judge) — on Slurm via `bash slurm/chain.sh`, or on Colab. Every model
+is open-weight and served locally; **no stage uses a hosted API key**, so do not add a provider
+client. `AGENT_MODEL` / `JUDGE_MODEL` swap the checkpoints and the vLLM tool-call parser follows the
+model family. All analysis runs on CPU from saved JSON outputs
 (`metrics.json`, `blackboards.json`, `agent_turns.json`, `tool_events.json`), so analysis work never
 needs a GPU or a rerun of generation.
 

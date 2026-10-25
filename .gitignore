@@ -11,3 +11,7 @@ outputs/
 
 # The Colosseum clone is an external dependency, not part of this repo.
 colosseum/
+
+# Per-user cluster settings (account, HF_HOME, HF_TOKEN); .env.example is tracked.
+.env
+.hf_cache/

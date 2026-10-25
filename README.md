@@ -244,7 +244,8 @@ Paraphrasing as a defense against hidden coordination is not new; Mathew et al. 
 
 ## Setup
 
-Target: Python 3.11, one A100 (Colab), vLLM.
+Target: Python 3.11, one A100, vLLM. On a Slurm cluster all of this is done by
+`sbatch slurm/setup.sbatch`; the steps below are the manual equivalent.
 
 ```bash
 # 1. Colosseum and its CoLLAB dependency
@@ -283,9 +284,15 @@ python -m carriers.runner --config configs/main.yaml --settings plan
 python -m carriers.runner --config configs/main.yaml --settings rq3,rq4 --seeds 1-20
 ```
 
+On a Slurm cluster the whole plan is one command, `bash slurm/chain.sh`, which
+submits pilot, sweep, judge and report as a dependent chain (one array task per
+setting, one GPU each) and resumes anything a timeout or preemption interrupted.
+
 `configs/smoke_fake.yaml` is the offline wiring check; it uses a scripted client
-and contacts no provider. See `RUNNING.md` for the Colab notebook, Modal
-replication, local judge, and report commands.
+and contacts no provider. Every model used here is open-weight and served
+locally by vLLM, so no provider API key is needed for any stage, including the
+judge. See `RUNNING.md` for the Slurm chain, the Colab notebook, the Modal
+replication, the local judge and the report commands.
 
 The offline checks (no GPU, no API) are:
 
@@ -333,13 +340,14 @@ Colosseum is a dependency. Our additions sit alongside it.
 | `carriers/verifier.py` | Trusted verifier agent (RQ6) | Implemented |
 | `carriers/paraphrase.py` | Public-message paraphraser (RQ4) | Implemented |
 | `carriers/hide_claims.py` | Execution-time claim hiding (RQ4) | Implemented |
-| `configs/` | `pilot.yaml`, `main.yaml`, `modal_replication.yaml`, `smoke_fake.yaml` | Implemented |
+| `configs/` | `unity.yaml`, `pilot.yaml`, `main.yaml`, `modal_replication.yaml`, `smoke_fake.yaml` | Implemented |
 | `analysis/` | Regret, λ_emp, paired tests, local judge, report tables | Implemented |
 | `tests/` | Offline unit and end-to-end wiring tests | Implemented |
 | `scripts/start_vllm.sh` | Agent and judge vLLM launcher | Implemented |
+| `slurm/` | Slurm entry point: `chain.sh` (pilot to report), setup, per-setting array job, judge, report | Implemented |
 | `notebooks/colab_runner.ipynb` | Colab A100 entry point | Implemented |
 | `modal_app.py` | Modal replication entry point | Implemented |
-| `RUNNING.md` | Colab, Modal, judge, and analysis commands | Implemented |
+| `RUNNING.md` | Slurm, Colab, Modal, judge, and analysis commands | Implemented |
 | `format/AuthorKit27/main.tex` | AAAI 2027 paper draft (pre-results) | Draft |
 | `results/` | Run outputs (`metrics.json`, `blackboards.json`, `agent_turns.json`, `tool_events.json`) | Generated |
 
@@ -347,9 +355,15 @@ Colosseum is a dependency. Our additions sit alongside it.
 
 | Resource | Use |
 |---|---|
-| Colab A100 | All generation and the local judge |
+| Unity (Slurm, A100) | All generation and the local judge; the primary path (`slurm/chain.sh`) |
+| Colab A100 | The same stages without a cluster allocation |
 | Modal ($50 credit) | A second model as a replication, or overflow |
 | CPU | All analysis, from saved JSON outputs |
+
+Every model is open-weight and served locally by vLLM: `Qwen2.5-7B-Instruct` for
+the agents and `Qwen2.5-14B-Instruct` for the judge by default, swappable for
+other Qwen or Llama checkpoints. No stage calls a hosted API, so the only budget
+that matters is GPU-hours.
 
 The full plan is 220 episodes:
 - 7 base settings × 20 seeds = 140;

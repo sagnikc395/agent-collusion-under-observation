@@ -44,9 +44,7 @@ image = (
         "pandas",
         "requests",
     )
-    .run_commands(
-        f"git clone --recurse-submodules --depth 1 {COLOSSEUM_REPO} /opt/colosseum"
-    )
+    .run_commands(f"git clone --recurse-submodules --depth 1 {COLOSSEUM_REPO} /opt/colosseum")
     .env(
         {
             "COLOSSEUM_ROOT": "/opt/colosseum",

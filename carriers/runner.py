@@ -19,6 +19,7 @@ import asyncio
 import copy
 import json
 import logging
+import os
 import random
 import sys
 import threading
@@ -599,6 +600,38 @@ def _run_dir_for(
     return root / "runs" / model_label / spec.name / run_id
 
 
+def apply_endpoint_overrides(
+    cfg: Dict[str, Any],
+    *,
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+    checkpoint: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Point every vLLM model in `cfg` at an already-running server.
+
+    On a cluster the server's port is picked at job start (two array tasks can
+    land on one node), so it cannot live in the YAML. When a host/port is given
+    the model is also marked as not-to-be-started, since the batch script owns
+    the server's lifetime.
+    """
+    for model in cfg.get("llm_models") or []:
+        llm = model.get("llm") or {}
+        vllm = llm.get("vllm")
+        if not isinstance(vllm, dict):
+            continue
+        if host is not None or port is not None:
+            vllm["auto_start_server"] = False
+            vllm["persistent_server"] = True
+        for entry in vllm.get("models") or []:
+            if host is not None:
+                entry["host"] = str(host)
+            if port is not None:
+                entry["port"] = int(port)
+            if checkpoint is not None:
+                entry["checkpoint"] = str(checkpoint)
+    return cfg
+
+
 async def run_from_config(
     config_path: str,
     *,
@@ -608,9 +641,15 @@ async def run_from_config(
     max_concurrent_runs: Optional[int] = None,
     overwrite: bool = False,
     client_factory: Optional[ClientFactory] = None,
+    vllm_host: Optional[str] = None,
+    vllm_port: Optional[int] = None,
+    vllm_checkpoint: Optional[str] = None,
 ) -> Path:
     """Run every (setting, seed, model) combination, skipping finished runs."""
     cfg = _load_yaml(config_path)
+    apply_endpoint_overrides(
+        cfg, host=vllm_host, port=vllm_port, checkpoint=vllm_checkpoint
+    )
     exp = cfg.get("experiment") or {}
 
     spec_names = list(settings or exp.get("settings") or ["pilot"])
@@ -788,6 +827,22 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     parser.add_argument(
         "--overwrite", action="store_true", help="Re-run episodes that already finished."
     )
+    parser.add_argument(
+        "--vllm-host",
+        default=os.environ.get("CARRIERS_VLLM_HOST"),
+        help="Host of an already-running vLLM server (default: $CARRIERS_VLLM_HOST).",
+    )
+    parser.add_argument(
+        "--vllm-port",
+        type=int,
+        default=(int(os.environ["CARRIERS_VLLM_PORT"]) if os.environ.get("CARRIERS_VLLM_PORT") else None),
+        help="Port of an already-running vLLM server (default: $CARRIERS_VLLM_PORT).",
+    )
+    parser.add_argument(
+        "--vllm-checkpoint",
+        default=os.environ.get("CARRIERS_VLLM_CHECKPOINT"),
+        help="Override the model checkpoint (default: $CARRIERS_VLLM_CHECKPOINT).",
+    )
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
@@ -817,6 +872,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             out_dir=args.out_dir,
             max_concurrent_runs=args.max_concurrent_runs,
             overwrite=bool(args.overwrite),
+            vllm_host=args.vllm_host,
+            vllm_port=args.vllm_port,
+            vllm_checkpoint=args.vllm_checkpoint,
         )
     )
     print(f"Wrote results to: {root}")
