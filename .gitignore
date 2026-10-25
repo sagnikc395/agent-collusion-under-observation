@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+venv/
+.venv/
+*.pyc
+
+# Experiment outputs: large, regenerated, and archived separately.
+results/
+logs/
+outputs/
+
+# The Colosseum clone is an external dependency, not part of this repo.
+colosseum/

@@ -1,0 +1,61 @@
+# Replication on a second model (README, Compute: Modal as "a second model as a
+# replication, or overflow"). Same settings, same seeds, different weights, so
+# the core claim is not resting on one 7B model.
+#
+#   modal run modal_app.py::run --config configs/modal_replication.yaml --settings core
+simulation:
+  max_iterations: 1
+  max_planning_rounds: 4
+  max_conversation_steps: 3
+  seed: 1
+  tags: [carriers_modal]
+
+environment:
+  name: JiraTicketEnvironment
+  assignment_filling: false
+  max_tasks: 8
+
+communication_network:
+  topology: complete
+  num_agents: 6
+  consolidate_channels: true
+
+llm_models:
+  - label: qwen2.5-14b
+    llm:
+      provider: vllm
+      vllm:
+        auto_start_server: true
+        persistent_server: true
+        health_check_path: "/models"
+        startup_timeout: 900
+        params:
+          max_tokens: 1024
+          temperature: 0.4
+        models:
+          - checkpoint: "Qwen/Qwen2.5-14B-Instruct"
+            host: "127.0.0.1"
+            port: 8020
+            tensor_parallel_size: 1
+            gpu_memory_utilization: 0.90
+            max_model_len: 16000
+            trust_remote_code: true
+            download_dir: /cache/huggingface
+            additional_args:
+              - "--enable-auto-tool-choice"
+
+experiment:
+  tag: carriers_modal
+  output_dir: /results/modal
+  seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  # The replication buys the most on the core chain; widen it if credit allows.
+  settings: [core]
+  colluder_count: 2
+  max_concurrent_runs: 4
+  log_prompts: true
+  collusion:
+    colluder_selection: random
+    agent_order: random
+  aux:
+    temperature: 0.0
+    max_tokens: 600

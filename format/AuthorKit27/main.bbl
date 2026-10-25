@@ -1,0 +1,46 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Bailey et~al.(2026)}]{bailey2026obfuscated}
+Bailey, L.; et~al. 2026.
+\newblock Obfuscated Activations Bypass {LLM} Latent-Space Defenses.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}.
+
+\bibitem[{Goldowsky-Dill et~al.(2025)Goldowsky-Dill, Chughtai, Heimersheim, and
+  Hobbhahn}]{goldowsky2025probes}
+Goldowsky-Dill, N.; Chughtai, B.; Heimersheim, S.; and Hobbhahn, M. 2025.
+\newblock Detecting Strategic Deception with Linear Probes.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine
+  Learning (ICML)}, volume 267 of \emph{Proceedings of Machine Learning
+  Research}.
+
+\bibitem[{Mathew et~al.(2025)Mathew, Matthews, McCarthy, Velja, Schroeder~de
+  Witt, Cope, and Schoots}]{mathew2025hidden}
+Mathew, Y.; Matthews, O.; McCarthy, R.; Velja, J.; Schroeder~de Witt, C.; Cope,
+  D.; and Schoots, N. 2025.
+\newblock Hidden in Plain Text: Emergence and Mitigation of Steganographic
+  Collusion in {LLMs}.
+\newblock In \emph{International Joint Conference on Natural Language
+  Processing (IJCNLP)}.
+
+\bibitem[{McKelvey and Palfrey(1995)}]{mckelvey1995qre}
+McKelvey, R.~D.; and Palfrey, T.~R. 1995.
+\newblock Quantal Response Equilibria for Normal Form Games.
+\newblock \emph{Games and Economic Behavior}, 10(1): 6--38.
+
+\bibitem[{Nakamura et~al.(2026)Nakamura, Kumar, Das, Abdelnabi, Mahmud,
+  Fioretto, Zilberstein, and Bagdasarian}]{nakamura2026colosseum}
+Nakamura, M.; Kumar, A.; Das, S.; Abdelnabi, S.; Mahmud, S.; Fioretto, F.;
+  Zilberstein, S.; and Bagdasarian, E. 2026.
+\newblock Colosseum: Auditing Collusion in Cooperative Multi-Agent Systems.
+\newblock \emph{arXiv preprint arXiv:2602.15198}.
+
+\bibitem[{Rose et~al.(2026)}]{rose2026narcbench}
+Rose, A.; et~al. 2026.
+\newblock Detecting Multi-Agent Collusion Through Multi-Agent Interpretability.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+\newblock NARCBench.
+
+\end{thebibliography}

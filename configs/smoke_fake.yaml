@@ -1,0 +1,40 @@
+# Offline wiring check: no provider is contacted (tests inject a scripted client).
+simulation:
+  max_iterations: 1
+  max_planning_rounds: 2
+  max_conversation_steps: 2
+  seed: 1
+
+environment:
+  name: JiraTicketEnvironment
+  assignment_filling: false
+  max_tasks: 8
+
+communication_network:
+  topology: complete
+  num_agents: 4
+  consolidate_channels: true
+
+llm_models:
+  - label: fake
+    llm:
+      provider: fake
+      model: fake-model
+      params:
+        max_tokens: 128
+        temperature: 0.0
+
+experiment:
+  tag: smoke_fake
+  output_dir: results/smoke_fake
+  seeds: [1]
+  settings: [all]
+  colluder_count: 2
+  max_concurrent_runs: 1
+  log_prompts: false
+  collusion:
+    colluder_selection: random
+    agent_order: random
+  aux:
+    temperature: 0.0
+    max_tokens: 256

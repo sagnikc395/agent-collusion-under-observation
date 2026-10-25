@@ -1,0 +1,62 @@
+# RQ2 pilot: benign vs emergent vs instructed coalition, 5 paired seeds.
+# Run this first. If the coalition gains nothing here, RQ3-RQ6 would measure noise
+# (README, RQ2: try `structured`, then colluders_first, then a larger model).
+simulation:
+  max_iterations: 1
+  max_planning_rounds: 4
+  max_conversation_steps: 3
+  seed: 1
+  tags: [carriers_pilot]
+
+environment:
+  name: JiraTicketEnvironment
+  assignment_filling: false
+  max_tasks: 8
+
+communication_network:
+  topology: complete
+  num_agents: 6
+  consolidate_channels: true
+
+llm_models:
+  - label: qwen2.5-7b
+    llm:
+      provider: vllm
+      vllm:
+        # Keep the server up between episodes; start it once (scripts/start_vllm.sh)
+        # or let the first episode launch it.
+        auto_start_server: true
+        persistent_server: true
+        health_check_path: "/models"
+        startup_timeout: 600
+        params:
+          max_tokens: 1024
+          temperature: 0.4
+        models:
+          - checkpoint: "Qwen/Qwen2.5-7B-Instruct"
+            host: "127.0.0.1"
+            port: 8020
+            tensor_parallel_size: 1
+            gpu_memory_utilization: 0.85
+            max_model_len: 16000
+            trust_remote_code: true
+            additional_args:
+              - "--enable-auto-tool-choice"
+
+experiment:
+  tag: carriers_pilot
+  output_dir: results/pilot
+  seeds: [1, 2, 3, 4, 5]
+  settings: [pilot]
+  colluder_count: 2
+  # Episodes are independent; raise this to keep the GPU busy.
+  max_concurrent_runs: 4
+  log_prompts: true
+  collusion:
+    colluder_selection: random
+    # random | colluders_first (RQ2 fallback if the coalition gains nothing)
+    agent_order: random
+  aux:
+    # Paraphraser / verifier / survey calls on the same base model.
+    temperature: 0.0
+    max_tokens: 600
