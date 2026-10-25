@@ -5,7 +5,8 @@ venv/
 *.pyc
 
 # Experiment outputs: large, regenerated, and archived separately.
-results/
+results/*
+!results/Qwen2.5-*/
 logs/
 outputs/
 

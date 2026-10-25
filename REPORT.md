@@ -85,22 +85,22 @@ README. The Holm column corrects across the 8 conditions of each model. Correcti
 ### Paired paraphrase effect (exact McNemar on the same 100 messages)
 
 "Lost" counts trials decoded on `plain` but not on `paraphrased`; "gained" counts the reverse.
-Holm correction is across the 12 model × scheme tests, as `covert.analysis` computes it.
+Holm correction is across the four schemes within each model, as pre-registered.
 
 | model | scheme | plain | paraphrased | lost | gained | p | Holm p |
 |---|---|---|---|---|---|---|---|
 | 1.5B | `none` | 0.50 | 0.50 | 0 | 0 | 1.0 | 1.0 |
-| 1.5B | `lexical` | 0.39 | 0.51 | 15 | 27 | 0.088 | 0.88 |
+| 1.5B | `lexical` | 0.39 | 0.51 | 15 | 27 | 0.088 | 0.35 |
 | 1.5B | `semantic` | 0.48 | 0.49 | 2 | 3 | 1.0 | 1.0 |
 | 1.5B | `improvised` | 0.51 | 0.50 | 1 | 0 | 1.0 | 1.0 |
 | 3B | `none` | 0.50 | 0.50 | 0 | 0 | 1.0 | 1.0 |
-| 3B | `lexical` | 0.76 | 0.48 | 35 | 7 | 1.5e-5 | **1.7e-4** |
-| 3B | `semantic` | 0.63 | 0.59 | 6 | 2 | 0.29 | 1.0 |
+| 3B | `lexical` | 0.76 | 0.48 | 35 | 7 | 1.5e-5 | **6.0e-5** |
+| 3B | `semantic` | 0.63 | 0.59 | 6 | 2 | 0.29 | 0.87 |
 | 3B | `improvised` | 0.52 | 0.49 | 7 | 4 | 0.55 | 1.0 |
-| 7B | `none` | 0.50 | 0.55 | 2 | 7 | 0.18 | 1.0 |
-| 7B | `lexical` | 0.88 | 0.54 | 35 | 1 | 1.1e-9 | **1.3e-8** |
-| 7B | `semantic` | 0.71 | 0.67 | 17 | 13 | 0.58 | 1.0 |
-| 7B | `improvised` | 0.50 | 0.55 | 7 | 12 | 0.36 | 1.0 |
+| 7B | `none` | 0.50 | 0.55 | 2 | 7 | 0.18 | 0.54 |
+| 7B | `lexical` | 0.88 | 0.54 | 35 | 1 | 1.1e-9 | **4.3e-9** |
+| 7B | `semantic` | 0.71 | 0.67 | 17 | 13 | 0.58 | 0.72 |
+| 7B | `improvised` | 0.50 | 0.55 | 7 | 12 | 0.36 | 0.72 |
 
 No model × scheme showed a significant paired change in flag rate (all Holm p = 1).
 
