@@ -77,15 +77,25 @@ and skip this cell; plain `transformers` is slower but always works.
         md("""
 ## 3. Configure
 
+`MODELS` run one after another, each into its own `<model>/` folder. A model whose
+folder already holds `N_TRIALS` finished trials is skipped without loading it, so you
+can leave a finished model in the list. The 7B model is the 4-bit AWQ build: full fp16
+7B weights do not fit a 15 GB T4.
+
 `N_TRIALS` is per condition; there are 8 conditions. Start with 30 to check the
 pipeline end to end, then raise it to 100-200 and run section 4 again: the first 30
-trials are reused, not redone.
+trials are reused, not redone. Keep `N_TRIALS` and `SEED` the same across models so
+every model sees the same trials (topic and bit).
 
 `USE_DRIVE = True` stores results on Google Drive (Colab asks you to sign in with a
 pop-up, no token). That copy survives a disconnect; files on the Colab disk do not.
 """),
         code("""
-MODEL = "Qwen/Qwen2.5-3B-Instruct"   # also try Qwen/Qwen2.5-1.5B-Instruct or Qwen/Qwen2.5-7B-Instruct-AWQ
+MODELS = [
+    "Qwen/Qwen2.5-1.5B-Instruct",
+    "Qwen/Qwen2.5-3B-Instruct",
+    "Qwen/Qwen2.5-7B-Instruct-AWQ",
+]
 BACKEND = "auto"                     # "vllm", "hf", or "auto" (vllm if installed)
 N_TRIALS = 100
 CHUNK_SIZE = 10                      # trials per saved chunk: a cut-off loses at most this many
@@ -127,23 +137,53 @@ def show_progress():
         md("""
 ## 4. Run
 
-Progress is logged after every chunk: trials done, ETA, receiver parse rate and running
-accuracy per condition. The same lines go to `run.log` in the run's folder. If this cell
-stops (crash, interrupt, out of memory), what was saved is downloaded as a zip anyway.
+Each model runs in its own Python process (`python -m covert.experiment`), so its GPU
+memory is released before the next model loads; freeing vLLM inside the notebook is not
+reliable. Progress is logged after every chunk: trials done, ETA, receiver parse rate and
+running accuracy per condition. The same lines go to `run.log` in the model's folder.
+If a model fails (e.g. out of memory), the loop reports it and moves on to the next one;
+whatever was saved is downloaded as a zip either way.
+
+If the 7B model runs out of memory, lower `gpu_memory_utilization` or `max_model_len` in
+`VLLMBackend` (section 2). With `BACKEND = "hf"`, the AWQ model also needs
+`!pip install -q autoawq`.
 """),
         code("""
-from covert.backends import make_backend
-from covert.experiment import Config, run, model_slug
+import json
+import subprocess
+import sys
+from covert.experiment import model_slug
 
-out_dir = f"{RESULTS_ROOT}/{model_slug(MODEL)}"
-if globals().get("loaded_model") != MODEL:
-    backend = make_backend(BACKEND, MODEL)   # loading takes a few minutes; reused on reruns
-    loaded_model = MODEL
+def trials_done(model):
+    p = f"{RESULTS_ROOT}/{model_slug(model)}/progress.json"
+    return json.load(open(p))["trials_done"] if os.path.exists(p) else 0
+
+failed = []
 try:
-    rows = run(Config(model=MODEL, n_trials=N_TRIALS, seed=SEED), backend, out_dir, chunk_size=CHUNK_SIZE)
+    for model in MODELS:
+        if trials_done(model) >= N_TRIALS:
+            print(f"== {model}: {N_TRIALS} trials already on disk, skipping ==")
+            continue
+        print(f"== {model} ==")
+        cmd = [sys.executable, "-u", "-m", "covert.experiment", "--backend", BACKEND,
+               "--model", model, "--n", str(N_TRIALS), "--chunk", str(CHUNK_SIZE),
+               "--seed", str(SEED), "--out", f"{RESULTS_ROOT}/{model_slug(model)}"]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            for line in proc.stdout:
+                print(line, end="")
+            proc.wait()
+        except KeyboardInterrupt:
+            proc.terminate()
+            proc.wait()
+            raise
+        if proc.returncode != 0:
+            failed.append(model)
+            print(f"!! {model} exited with code {proc.returncode}; its saved chunks are kept")
 finally:
     # Runs on success, error or interrupt, so a partial run still reaches your computer.
-    save_results(f"covert_{model_slug(MODEL)}")
+    save_results("covert_results_runs")
+print("failed:", failed or "none")
 """),
         md("Check on a run at any time, including after a reconnect, without starting anything:"),
         code("show_progress()"),
@@ -179,17 +219,20 @@ summary.round(3)
         code('fig = A.plot(summary, f"{TABLES}/fig1.png")'),
         md("## 6. Examples for the report\n\nMessages the receiver decoded in plain form but not after paraphrasing."),
         code("""
-for scheme in ["lexical", "semantic", "improvised"]:
-    print(f"===== {scheme} =====")
-    for _, r in A.examples(df, scheme, k=2).iterrows():
-        print("PLAIN:      ", r.plain)
-        print("PARAPHRASED:", r.paraphrased, "\\n")
+for model, g in df.groupby("model"):
+    for scheme in ["lexical", "semantic", "improvised"]:
+        print(f"===== {model} / {scheme} =====")
+        for _, r in A.examples(g, scheme, k=2).iterrows():
+            print("PLAIN:      ", r.plain)
+            print("PARAPHRASED:", r.paraphrased, "\\n")
 """),
         code("""
 # What the improvised sender actually did: read a few, these are the qualitative result.
-for _, r in df[(df.scheme == "improvised") & (df.channel == "plain")].head(6).iterrows():
-    print(r.bit, "|", "correct" if r.correct else "wrong", "|", "flagged" if r.flagged else "clean")
-    print(r.message, "\\n")
+for model, g in df.groupby("model"):
+    print(f"===== {model} =====")
+    for _, r in g[(g.scheme == "improvised") & (g.channel == "plain")].head(4).iterrows():
+        print(r.bit, "|", "correct" if r.correct else "wrong", "|", "flagged" if r.flagged else "clean")
+        print(r.message, "\\n")
 """),
         md("""
 ## 7. Download everything

@@ -73,9 +73,13 @@ chunk. Raising `N_TRIALS` later extends a run instead of redoing it. The results
 works on partial runs, and a zip of everything is downloaded whenever the run cell stops,
 including on an error or interrupt.
 
-- Change `MODEL` to compare sizes (`Qwen/Qwen2.5-1.5B-Instruct`, `Qwen/Qwen2.5-7B-Instruct-AWQ`);
-  each model writes its own `results/<model>/`, and the analysis cell pools them.
-- If vLLM will not install, set `BACKEND = "hf"` (plain transformers, slower).
+- `MODELS` lists the sizes to compare (`Qwen/Qwen2.5-1.5B-Instruct`, `Qwen/Qwen2.5-3B-Instruct`,
+  `Qwen/Qwen2.5-7B-Instruct-AWQ`). They run one after another, each in its own process so the
+  GPU is freed between them, and each writes its own `results/<model>/`. A model that already
+  has `N_TRIALS` finished trials is skipped. The analysis cell pools all of them.
+- The 7B model is the 4-bit AWQ build, because fp16 7B weights do not fit a T4.
+- If vLLM will not install, set `BACKEND = "hf"` (plain transformers, slower; the AWQ model
+  then also needs `pip install autoawq`).
 
 From a shell, with any GPU or a local OpenAI-compatible server:
 
