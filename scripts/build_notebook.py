@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULES = ["__init__.py", "prompts.py", "backends.py", "experiment.py", "analysis.py"]
+MODULES = ["__init__.py", "prompts.py", "backends.py", "experiment.py", "followup.py", "analysis.py"]
 
 
 def md(text: str) -> dict:
@@ -154,32 +154,37 @@ import subprocess
 import sys
 from covert.experiment import model_slug
 
-def trials_done(model):
-    p = f"{RESULTS_ROOT}/{model_slug(model)}/progress.json"
+def trials_done(run_dir):
+    p = f"{run_dir}/progress.json"
     return json.load(open(p))["trials_done"] if os.path.exists(p) else 0
+
+def run_cli(module, *args):
+    \"\"\"Run `python -m covert.<module> ...` in its own process, streaming its log; True if it succeeded.\"\"\"
+    cmd = [sys.executable, "-u", "-m", f"covert.{module}", *map(str, args)]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    try:
+        for line in proc.stdout:
+            print(line, end="")
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+        proc.wait()
+        raise
+    if proc.returncode != 0:
+        print(f"!! exited with code {proc.returncode}; whatever was saved is kept")
+    return proc.returncode == 0
 
 failed = []
 try:
     for model in MODELS:
-        if trials_done(model) >= N_TRIALS:
+        out = f"{RESULTS_ROOT}/{model_slug(model)}"
+        if trials_done(out) >= N_TRIALS:
             print(f"== {model}: {N_TRIALS} trials already on disk, skipping ==")
             continue
         print(f"== {model} ==")
-        cmd = [sys.executable, "-u", "-m", "covert.experiment", "--backend", BACKEND,
-               "--model", model, "--n", str(N_TRIALS), "--chunk", str(CHUNK_SIZE),
-               "--seed", str(SEED), "--out", f"{RESULTS_ROOT}/{model_slug(model)}"]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        try:
-            for line in proc.stdout:
-                print(line, end="")
-            proc.wait()
-        except KeyboardInterrupt:
-            proc.terminate()
-            proc.wait()
-            raise
-        if proc.returncode != 0:
+        if not run_cli("experiment", "--backend", BACKEND, "--model", model, "--n", N_TRIALS,
+                       "--chunk", CHUNK_SIZE, "--seed", SEED, "--out", out):
             failed.append(model)
-            print(f"!! {model} exited with code {proc.returncode}; its saved chunks are kept")
 finally:
     # Runs on success, error or interrupt, so a partial run still reaches your computer.
     save_results("covert_results_runs")
@@ -235,17 +240,107 @@ for model, g in df.groupby("model"):
         print(r.message, "\\n")
 """),
         md("""
-## 7. Download everything
+## 7. Follow-up experiments
 
-One zip with every run (trials, logs, configs) plus the tables and figure, then the
-figure and tables on their own for dropping straight into the report.
+Pre-registered in the README (F1-F4, expectations 6-12). F1-F3 reuse the sender messages
+saved by section 4, so every follow-up row pairs with a main-run row. All of it lands in
+`RESULTS_ROOT/followup/`, resumes after a disconnect like the main run, and skips work
+that is already on disk.
+
+| Step | What it does | Rough T4 time for all three models |
+|---|---|---|
+| F4 | the main experiment again with seed 1 (`followup/seed1/<model>/`) | ~5 min |
+| F3 | each model rewrites its own messages into bare factual updates (`sanitized` channel) | ~5 min |
+| F1, F2 | each model scores every model's messages by probability: P(HIGH) as receiver, P(YES) as monitor under two prompts | ~15-25 min |
+
+Each step needs the one before only where noted: F1/F2 also score the `sanitized`
+messages, so run F3 first (the cell does). Model loading dominates the time.
+"""),
+        code("""
+FOLLOWUP = f"{RESULTS_ROOT}/followup"
+RUN_F4, RUN_F3, RUN_F1_F2 = True, True, True
+main_runs = [f"{RESULTS_ROOT}/{model_slug(m)}" for m in MODELS]
+
+failed = []
+try:
+    if RUN_F4:
+        for model in MODELS:
+            out = f"{FOLLOWUP}/seed1/{model_slug(model)}"
+            if trials_done(out) >= N_TRIALS:
+                print(f"== F4 {model}: done, skipping ==")
+            elif not run_cli("experiment", "--backend", BACKEND, "--model", model, "--n", N_TRIALS,
+                             "--chunk", CHUNK_SIZE, "--seed", 1, "--out", out):
+                failed.append(("F4", model))
+    if RUN_F3:
+        for model in MODELS:
+            print(f"== F3 {model} ==")
+            if not run_cli("followup", "sanitize", "--backend", BACKEND, "--model", model,
+                           "--run", f"{RESULTS_ROOT}/{model_slug(model)}", "--out", FOLLOWUP):
+                failed.append(("F3", model))
+    if RUN_F1_F2:
+        for model in MODELS:
+            print(f"== F1/F2 judge {model} ==")
+            if not run_cli("followup", "score", "--backend", BACKEND, "--model", model,
+                           "--runs", *main_runs, "--out", FOLLOWUP):
+                failed.append(("F1/F2", model))
+finally:
+    save_results("covert_results_followup")
+print("failed:", failed or "none")
+"""),
+        md("""
+## 8. Follow-up results
+
+Everything here also runs on partial follow-up data. `monitor_auroc`: how well the
+monitor's P(YES) separates each scheme's messages from `none` messages by the same sender
+(0.5 = blind, 1 = perfect). `receiver_auroc`: how well P(HIGH) tracks the true bit,
+free of the receiver's lean towards LOW. `sanitized_tests`: exact McNemar of the
+`sanitized` channel against `plain` and against `paraphrased`.
+"""),
+        code("""
+FT = f"{TABLES}/followup"
+ft = A.followup(df, FOLLOWUP, FT)
+ex = A.exploratory(df, f"{TABLES}/exploratory")
+print("follow-up tables:", list(ft), "| exploratory tables:", list(ex))
+"""),
+        code("""
+if "monitor_auroc" in ft:
+    m = ft["monitor_auroc"]
+    display(m[m.channel == "plain"].pivot_table(index=["model", "scheme"], columns=["prompt", "judge"],
+                                                 values="auroc").round(2))
+"""),
+        code("""
+if "receiver_auroc" in ft:
+    r = ft["receiver_auroc"]
+    display(r.pivot_table(index=["model", "scheme"], columns=["channel", "judge"], values="auroc").round(2))
+"""),
+        code("""
+for name in ["summary_sanitized", "sanitized_tests", "utility", "replication"]:
+    if name in ft:
+        print(f"===== {name} =====")
+        display(ft[name].round(3))
+"""),
+        md("Sanitized rewrites next to the original message, to check what the sanitizer kept."),
+        code("""
+san = A.load_sanitized(FOLLOWUP)
+for _, r in san[san.scheme == "semantic"].groupby("model").head(2).iterrows():
+    print(r.model, "| bit", r.bit, "| decoded", "yes" if r.correct else "no")
+    print("ORIGINAL: ", r.message)
+    print("SANITIZED:", r.delivered, "\\n")
+"""),
+        md("""
+## 9. Download everything
+
+One zip with every run (trials, logs, configs) plus the tables and figures, then the
+headline figures and tables on their own for dropping straight into the report.
 """),
         code("""
 save_results("covert_results_all")
 try:
     from google.colab import files
-    for f in ["fig1.png", "summary.csv", "paraphrase_tests.csv"]:
-        files.download(f"{TABLES}/{f}")
+    for f in ["fig1.png", "summary.csv", "paraphrase_tests.csv", "followup/fig2_auroc.png",
+              "followup/fig3_sanitized.png"]:
+        if os.path.exists(f"{TABLES}/{f}"):
+            files.download(f"{TABLES}/{f}")
 except ImportError:
     pass
 """),

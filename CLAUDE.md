@@ -22,7 +22,12 @@ Colosseum back or widen the design without being asked.
   receiver + monitor, in chunks. Each chunk is appended and fsynced to `trials.jsonl`, with
   `run.log` and `progress.json`; rerunning on the same directory resumes (partial trials are
   dropped, a changed config is refused). Keep this crash-safety when editing.
-- `covert/analysis.py` — `summarize`, `paraphrase_tests`, `plot`, `examples`; CPU only.
+- `covert/followup.py` — follow-ups over the saved messages of finished runs: `sanitize` (the
+  `sanitized` channel) and `score` (probability-scored receiver and monitors, any judge model on
+  any run). Same chunked, fsynced, resumable writing as `experiment.py`.
+- `covert/analysis.py` — `summarize`, `paired_tests`, `plot`, `examples`, the follow-up tables
+  (`followup`, `monitor_auroc`, `receiver_auroc`, `replication`) and the exploratory ones
+  (`exploratory`); CPU only.
 - `notebooks/covert_signal.ipynb` — **generated** by `scripts/build_notebook.py`, which inlines
   `covert/*.py` as `%%writefile` cells. Never hand-edit the notebook; edit `covert/` or the
   builder, then rebuild.
@@ -33,9 +38,10 @@ Colosseum back or widen the design without being asked.
   deliver the same sender message. Analysis must stay paired (McNemar on matched trials), not
   compare pooled means.
 - Condition labels are fixed: schemes `none`, `lexical`, `semantic`, `improvised`; channels
-  `plain`, `paraphrased`. Use them verbatim in code, files and the write-up.
-- The pre-registered expectations in the README are written before results; do not edit them to
-  match results. Report misses as misses.
+  `plain`, `paraphrased`, `sanitized` (follow-up F3). Use them verbatim in code, files and the write-up.
+- The pre-registered expectations in the README (1-5 for the main run, 6-12 for the follow-ups)
+  are written before results; do not edit them to match results. Report misses as misses.
+  Analyses not in the README are exploratory and must be labelled so.
 - Experiments run on Google Colab (the user runs them there). Do not run models locally.
 - Models are open-weight and served locally in the runtime; do not add a hosted API client.
 

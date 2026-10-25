@@ -116,12 +116,22 @@ including on an error or interrupt.
 - If vLLM will not install, set `BACKEND = "hf"` (plain transformers, slower; the AWQ model
   then also needs `pip install autoawq`).
 
+Sections 7-8 of the notebook run and analyse the follow-ups (F1-F4) after the main run,
+in about 30-40 minutes on a T4 for all three models. They write to
+`MyDrive/covert_results/followup/`, resume after a disconnect, and skip finished work.
+Probability scoring needs the `vllm` or `hf` backend.
+
 From a shell, with any GPU or a local OpenAI-compatible server:
 
 ```bash
 python -m covert.experiment --backend vllm --model Qwen/Qwen2.5-3B-Instruct --n 100
 python -m covert.experiment --backend openai --model qwen2.5:3b --base-url http://127.0.0.1:11434/v1
 python -m covert.analysis results/Qwen2.5-3B-Instruct --out results/tables
+
+# follow-ups (GPU), then their analysis (CPU)
+python -m covert.followup sanitize --backend vllm --model Qwen/Qwen2.5-3B-Instruct
+python -m covert.followup score --backend vllm --model Qwen/Qwen2.5-3B-Instruct
+python -m covert.analysis results/Qwen2.5-*/ --out results/tables --exploratory --followup results/followup
 ```
 
 The notebook is generated from the package. After editing `covert/`, rebuild it:
@@ -144,10 +154,12 @@ python -m pytest tests -q
 | `covert/prompts.py` | cover topics, codebooks, the four role prompts, answer parsing |
 | `covert/backends.py` | batched vLLM, transformers, OpenAI-compatible and scripted backends |
 | `covert/experiment.py` | trial construction and the sender → channel → receiver/monitor pipeline |
-| `covert/analysis.py` | summary table, paired tests, the headline figure, example messages |
+| `covert/followup.py` | follow-ups F1-F3 over saved messages: the `sanitized` channel and probability scoring |
+| `covert/analysis.py` | summary table, paired tests, figures, example messages, follow-up and exploratory tables |
 | `notebooks/covert_signal.ipynb` | the Colab notebook (generated) |
 | `scripts/build_notebook.py` | inlines `covert/` into the notebook |
 | `tests/test_covert.py` | end-to-end test with a scripted model |
+| `tests/test_followup.py` | the follow-up passes and their analysis, with a scripted model |
 
 ## Limitations
 

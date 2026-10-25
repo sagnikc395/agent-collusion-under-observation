@@ -158,7 +158,7 @@ def score(
             rows += read_rows(out_root / "sanitized" / model_slug(rows[0]["model"]) / "trials.jsonl")
         items += rows
     path = out / "scores.jsonl"
-    key = lambda r: (r["model"], r["scheme"], r["channel"], r["trial"])  # noqa: E731
+    key = lambda r: (r["model"], r["scheme"], r["channel"], r["trial"])
     done = {key(r) for r in read_rows(path)}
     todo = [r for r in items if key(r) not in done]
     log.info(f"score: judge={judge} messages={len(items)} to go={len(todo)} out={out}")

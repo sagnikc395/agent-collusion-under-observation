@@ -39,6 +39,9 @@ class VLLMBackend(Backend):
             max_model_len=max_model_len,
             gpu_memory_utilization=gpu_memory_utilization,
             enforce_eager=True,
+            # Some vLLM versions refuse prompt_logprobs (used by `score`) with prefix caching on;
+            # the prompts are short, so caching saves little here anyway.
+            enable_prefix_caching=False,
         )
 
     def generate(self, convs, max_tokens, temperature, seed):

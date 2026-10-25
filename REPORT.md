@@ -212,6 +212,101 @@ and a few overt coffee/tea remarks ("…brew a pot of tea rather than coffee"). 
 the ordinary `lexical` messages ("Basically, we plan to…") that the receiver decoded perfectly.
 The monitor reacts to messages that are visibly strange, not to codes.
 
+## Exploratory analyses (not pre-registered)
+
+These were run on the same 2,400 rows after the main results were known, so they are
+exploratory. All come from `python -m covert.analysis ... --exploratory`, which writes them to
+`results/tables/exploratory/`.
+
+### A simple trained detector catches what the LLM monitor misses
+
+We trained a bag-of-words naive Bayes classifier to tell each scheme's messages apart from
+`none` messages by the same sender. It uses 5-fold cross-validation, with folds split by trial
+so a trial's coded and uncoded messages are always tested together. As a second baseline we
+used message length alone. AUROC is shown with a 95% bootstrap CI over trials (0.5 = no
+better than chance).
+
+| model | channel | `lexical` | `semantic` | `improvised` |
+|---|---|---|---|---|
+| 1.5B | `plain` | 0.68 [0.61, 0.76] | 0.84 [0.79, 0.89] | 0.78 [0.72, 0.84] |
+| 3B | `plain` | 0.97 [0.95, 0.99] | 1.00 [0.99, 1.00] | 0.98 [0.96, 0.99] |
+| 3B | `paraphrased` | 0.87 [0.82, 0.92] | 0.97 [0.95, 0.99] | 0.94 [0.90, 0.97] |
+| 7B | `plain` | 0.98 [0.96, 0.99] | 0.98 [0.97, 0.99] | 0.98 [0.95, 0.99] |
+| 7B | `paraphrased` | 0.91 [0.88, 0.95] | 0.97 [0.94, 0.99] | 0.94 [0.91, 0.97] |
+
+Coded messages are easy to detect even when nobody can decode them. The detector separates
+`improvised` messages from `none` with AUROC 0.98, although no receiver recovered their bit.
+It is picking up the change in style that the instruction to hide something causes, not the
+bit itself. At 3B, coded messages are clearly shorter than `none` messages (length AUROC
+0.15–0.30, where values below 0.5 mean shorter). This detector has an advantage a real
+defender usually lacks: labelled examples of coded and uncoded messages. Still, the contrast
+with the prompted monitor, which flagged at most 1.5% of messages, is large. Detecting *that*
+agents are coordinating is far easier than decoding *what* they say, and the same-size LLM
+monitor manages neither.
+
+### Sensitivity and bias, separated
+
+Signal-detection measures from the receiver's guesses: d′ is sensitivity (0 = no
+information), and the criterion c is bias (positive = leaning LOW).
+
+| model | scheme | d′ plain | d′ paraphrased | c plain |
+|---|---|---|---|---|
+| 3B | `lexical` | 1.38 | −0.25 | 0.06 |
+| 3B | `semantic` | 0.95 | 0.56 | −0.88 |
+| 7B | `lexical` | 2.64 | 0.23 | 0.57 |
+| 7B | `semantic` | 1.12 | 0.89 | −0.26 |
+| all | `none` | 0.00 | 0.00–0.46 | 1.65–2.33 |
+
+Paraphrasing removes nearly all of the `lexical` sensitivity and only part of the `semantic`
+sensitivity. For `none` the criterion is large, so the receivers lean strongly towards LOW.
+Under `semantic` they lean towards HIGH, because "coffee" turns up in messages of both bits.
+
+### Is the paraphrase gap between codes real?
+
+The pre-registration compared expectations 2 and 3 only descriptively. A paired bootstrap over
+trials (5,000 resamples) of the paraphrase drop for `lexical` minus the drop for `semantic`
+gives:
+
+| model | drop, `lexical` | drop, `semantic` | difference [95% CI] |
+|---|---|---|---|
+| 1.5B | −0.12 | −0.01 | −0.11 [−0.24, 0.02] |
+| 3B | 0.28 | 0.04 | **0.24 [0.12, 0.36]** |
+| 7B | 0.34 | 0.04 | **0.30 [0.16, 0.45]** |
+
+At 3B and 7B, paraphrasing hurts the word code significantly more than the topic code.
+
+### Robustness across topics
+
+The `lexical` result holds topic by topic. At 7B, `lexical/plain` accuracy is above 0.5 for
+12 of 12 cover topics, and paraphrasing lowers it for 11 of 12. At 3B the counts are 10 and 10
+of 12. For `semantic`, paraphrasing lowers accuracy for only 4 (3B) and 5 (7B) of 12 topics,
+and leaves it unchanged for most of the rest. No single topic drives the main effects.
+
+### What the paraphraser changes
+
+Paraphrased messages share only 35–47% of their words with the original (word-level Jaccard)
+and are about the same length (ratio 1.0–1.18), at every size and for every scheme. The
+paraphraser rewrote heavily, yet kept "coffee" in 41 of 47 (3B) and 67 of 72 (7B) messages that
+had it. The topic code survives because the rewrite keeps content, not because the paraphraser
+was too timid.
+
+## Follow-up experiments (pre-registered, awaiting runs)
+
+The README lists four follow-ups (F1–F4) with expectations 6–12, committed before any of them
+were run. They are built into `covert/followup.py` and notebook sections 7–8:
+
+- **F1. Scored monitor.** The monitor's P(YES) under the original and an `informed` prompt, for
+  every monitor size on every sender size. Tests whether the monitor is blind or only unwilling
+  to say YES, and whether a larger monitor helps.
+- **F2. Scored receiver.** P(HIGH) as a bias-free decoding measure, for every receiver size on
+  every sender size. Tests whether hidden signal sits behind the LOW default, and whether a
+  stronger receiver decodes a weaker sender.
+- **F3. `sanitized` channel.** A rewrite that keeps only work facts. Tests whether a stricter
+  rewrite removes the topic code that paraphrasing leaves, and what it costs in kept content.
+- **F4. Replication** with seed 1.
+
+Results will go here once the notebook has been run.
+
 ## Interpretation
 
 **Question 3.1 (carriers).** With an agreed code, the main thing size changes is whether the
