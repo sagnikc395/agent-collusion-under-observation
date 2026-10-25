@@ -1,8 +1,8 @@
-# Replication on a second model (README, Compute: Modal as "a second model as a
-# replication, or overflow"). Same settings, same seeds, different weights, so
-# the core claim is not resting on one 7B model.
+# Replication on a second, larger model (README, Compute). Same settings, same
+# seeds, bigger weights, so the core claim is not resting on one 3B model.
+# This is a stretch goal for the sprint, not part of the headline result.
 #
-#   modal run modal_app.py::run --config configs/modal_replication.yaml --settings core
+#   modal run modal_app.py::run --config configs/modal_replication.yaml --settings sprint
 simulation:
   max_iterations: 1
   max_planning_rounds: 4
@@ -21,7 +21,7 @@ communication_network:
   consolidate_channels: true
 
 llm_models:
-  - label: qwen2.5-14b
+  - label: qwen2.5-7b
     llm:
       provider: vllm
       vllm:
@@ -33,12 +33,12 @@ llm_models:
           max_tokens: 1024
           temperature: 0.4
         models:
-          - checkpoint: "Qwen/Qwen2.5-14B-Instruct"
+          - checkpoint: "Qwen/Qwen2.5-7B-Instruct"
             host: "127.0.0.1"
             port: 8020
             tensor_parallel_size: 1
             gpu_memory_utilization: 0.90
-            max_model_len: 16000
+            max_model_len: 8192
             trust_remote_code: true
             download_dir: /cache/huggingface
             additional_args:
@@ -47,9 +47,9 @@ llm_models:
 experiment:
   tag: carriers_modal
   output_dir: /results/modal
-  seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  seeds: [1, 2, 3, 4, 5, 6, 7, 8]
   # The replication buys the most on the core chain; widen it if credit allows.
-  settings: [core]
+  settings: [sprint]
   colluder_count: 2
   max_concurrent_runs: 4
   log_prompts: true

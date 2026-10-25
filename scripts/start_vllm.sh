@@ -2,10 +2,14 @@
 # Start the agent model (port 8020) and, with --judge, the judge model (8021).
 # Terrarium can start the agent server itself, but starting it once here keeps
 # concurrent episodes from racing to launch it.
+#
+# Both defaults fit a single 16GB card (Colab T4), one at a time: a 3B agent
+# model in fp16 and a 4-bit 7B judge, ~12GB of weights in total. On a T4 also
+# export VLLM_ATTENTION_BACKEND=XFORMERS -- FlashAttention needs sm80.
 set -euo pipefail
 
-AGENT_MODEL="${AGENT_MODEL:-Qwen/Qwen2.5-7B-Instruct}"
-JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen2.5-14B-Instruct}"
+AGENT_MODEL="${AGENT_MODEL:-Qwen/Qwen2.5-3B-Instruct}"
+JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen2.5-7B-Instruct-AWQ}"
 LOG_DIR="${LOG_DIR:-logs/vllm}"
 mkdir -p "$LOG_DIR"
 
@@ -20,7 +24,8 @@ start() {
     --model "$model" \
     --port "$port" \
     --host 127.0.0.1 \
-    --max-model-len 16000 \
+    --max-model-len "${VLLM_MAX_MODEL_LEN:-8192}" \
+    --dtype "${VLLM_DTYPE:-half}" \
     --gpu-memory-utilization "$util" \
     --enable-auto-tool-choice \
     --tool-call-parser hermes \
@@ -47,6 +52,6 @@ if [[ "${1:-agent}" == "--judge" ]]; then
   start "$JUDGE_MODEL" 8021 0.90 judge
   wait_ready 8021 judge
 else
-  start "$AGENT_MODEL" 8020 0.85 agent
+  start "$AGENT_MODEL" 8020 0.90 agent
   wait_ready 8020 agent
 fi

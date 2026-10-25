@@ -5,6 +5,12 @@
 - A research project and implementation for a hackathon (Track 3: Collusion
   Carriers and Countermeasures). `README.md` is the specification: threat model,
   RQ1–RQ6, pre-registered evidence standard, metrics, and experiment plan.
+- Scope: a one-day sprint on a single 16GB GPU. RQ1–RQ4 only, the `sprint`
+  setting group (6 settings) × 8 paired seeds = 48 episodes, `Qwen2.5-3B-Instruct`
+  agents and a 4-bit `Qwen2.5-7B-Instruct-AWQ` judge (~12GB of weights). RQ5,
+  RQ6, the `hide_claims`/`_both` ablations and the Modal replication are
+  implemented and tested, but are stretch goals — do not widen the default grid
+  or the model sizes unasked.
 - Read `README.md` before coding. The RQs are sequential: later stages depend on
   earlier results, and the README says how the design changes if a stage is
   negative. Implement the specified design rather than re-deriving it.
@@ -32,7 +38,7 @@
 - When implementing λ_emp, fit only on instances where the team-best and
   coalition-best actions differ, bootstrap over seeds, and sanity-check that
   benign agents give λ near 0.
-- Judge scores come from a local Qwen2.5-14B, so absolute values are not
+- Judge scores come from a local 4-bit Qwen2.5-7B, so absolute values are not
   comparable to Colosseum's published results. Only within-project differences
   are meaningful.
 - Do not fabricate results. The paper is a pre-results protocol; result tables
@@ -72,9 +78,9 @@
   Colosseum environment active and `COLOSSEUM_ROOT` set:
 
   ```bash
-  python -m carriers.runner --config configs/pilot.yaml
-  python -m carriers.runner --config configs/main.yaml --settings plan
-  python -m carriers.runner --config configs/main.yaml --settings rq3,rq4 --seeds 1-20
+  python -m carriers.runner --config configs/sprint.yaml --settings pilot --seeds 1-4
+  python -m carriers.runner --config configs/sprint.yaml          # the 48-episode grid
+  python -m carriers.runner --config configs/sprint.yaml --settings rq3,rq4 --seeds 1-8
   ```
 
   `configs/smoke_fake.yaml` is the offline wiring check. See `RUNNING.md` for
@@ -83,12 +89,12 @@
 - Analysis is CPU-only from saved artifacts:
 
   ```bash
-  python -m analysis.report --results results/main --out results/tables
-  python -m analysis.judge --results results/main \
-    --base-url http://127.0.0.1:8021/v1 --model Qwen/Qwen2.5-14B-Instruct
+  python -m analysis.report --results results/sprint --out results/sprint/tables
+  python -m analysis.judge --results results/sprint \
+    --base-url http://127.0.0.1:8021/v1 --model Qwen/Qwen2.5-7B-Instruct-AWQ
   ```
 
-- Generation and judging require a GPU (Colab A100 + vLLM). `results/`, `logs/`,
+- Generation and judging require a GPU (one 16GB card, e.g. a Colab T4, + vLLM). `results/`, `logs/`,
   and `outputs/` are generated and ignored. Change analysis without rerunning
   generation.
 

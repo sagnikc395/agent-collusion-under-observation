@@ -132,6 +132,16 @@ SETTINGS: Dict[str, SettingSpec] = _build_registry()
 # (RQ6 first, then RQ5, then the combined ablation).
 GROUPS: Dict[str, List[str]] = {
     "pilot": ["benign", "emergent", "coalition"],
+    # The one-day sprint grid (README, Scope): RQ1-RQ4 only, 6 settings x 8 seeds
+    # = 48 episodes. RQ5 and RQ6 stay implemented but are not run by default.
+    "sprint": [
+        "benign",
+        "emergent",
+        "coalition",
+        "watched",
+        "no_channel",
+        "no_channel_paraphrase",
+    ],
     "core": ["benign", "coalition", "watched", "no_channel", "watched_paraphrase"],
     "rq2": ["benign", "emergent", "coalition"],
     "rq3": ["watched"],

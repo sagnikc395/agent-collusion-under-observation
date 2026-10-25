@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The whole experiment as one dependent chain of Slurm jobs. Run from a login node.
 #
-#   bash slurm/chain.sh                 # pilot -> sweep -> judge -> report
-#   bash slurm/chain.sh --fast          # 5 settings x 8 seeds (a few GPU-hours)
+#   bash slurm/chain.sh                 # the sprint grid: 6 settings x 8 seeds
+#   bash slurm/chain.sh --full          # the 11-setting, 20-seed plan (RQ1-RQ6)
 #   bash slurm/chain.sh --stage judge   # just that stage, on what is on disk
 #   bash slurm/chain.sh --dry-run       # print the submissions, send nothing
 #
@@ -11,30 +11,31 @@
 #
 # Knobs (flags, or the same names in .env):
 #   SLURM_ACCOUNT   Slurm account, if your Unity account is not the default
-#   CONFIG          experiment YAML            (configs/unity.yaml)
-#   SETTINGS        setting or group list      (plan -- the 11-setting grid)
-#   SEEDS           seed list or range         (1-20)
-#   PILOT_SEEDS     seeds for the RQ2 pilot    (1-5)
+#   CONFIG          experiment YAML            (configs/sprint.yaml)
+#   SETTINGS        setting or group list      (sprint -- RQ1-RQ4, 6 settings)
+#   SEEDS           seed list or range         (1-8)
+#   PILOT_SEEDS     seeds for the RQ2 pilot    (1-4)
 #   MAXPAR          GPU jobs in flight at once (4)
-#   CARRIERS_RESULTS  results root             (results/unity)
+#   CARRIERS_RESULTS  results root             (results/sprint)
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 PROJECT_ROOT="$PWD"
 if [[ -f .env ]]; then set -a; source .env; set +a; fi
 
-CONFIG="${CONFIG:-configs/unity.yaml}"
-SETTINGS="${SETTINGS:-plan}"
-SEEDS="${SEEDS:-1-20}"
-PILOT_SEEDS="${PILOT_SEEDS:-1-5}"
+CONFIG="${CONFIG:-configs/sprint.yaml}"
+SETTINGS="${SETTINGS:-sprint}"
+SEEDS="${SEEDS:-1-8}"
+PILOT_SEEDS="${PILOT_SEEDS:-1-4}"
 MAXPAR="${MAXPAR:-4}"
-CARRIERS_RESULTS="${CARRIERS_RESULTS:-$PROJECT_ROOT/results/unity}"
+CARRIERS_RESULTS="${CARRIERS_RESULTS:-$PROJECT_ROOT/results/sprint}"
 STAGE="all"
 DRY=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --fast)      SETTINGS="core"; SEEDS="1-8"; PILOT_SEEDS="1-4"; shift ;;
+    --full)      CONFIG="configs/unity.yaml"; SETTINGS="plan"; SEEDS="1-20"; PILOT_SEEDS="1-5"; shift ;;
+    --fast)      SETTINGS="core"; SEEDS="1-4"; PILOT_SEEDS="1-4"; shift ;;
     --stage)     STAGE="$2"; shift 2 ;;
     --settings)  SETTINGS="$2"; shift 2 ;;
     --seeds)     SEEDS="$2"; shift 2 ;;

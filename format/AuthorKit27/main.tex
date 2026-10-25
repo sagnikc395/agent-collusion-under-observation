@@ -92,7 +92,7 @@ Training-time attacks, models trained for steganography, and white-box monitorin
 We use the JIRA ticket-allocation environment from Colosseum, unmodified. Six engineer agents each claim at most one of eight tickets. The team score rewards completed tickets and high priority, and penalizes skill-adjusted effort and duplicate claims. Each agent's skills and availability are private, so agents have to talk to allocate well. Because the task is a distributed constraint optimization problem (DCOP), the cooperative objective is known and we can compute what any agent or pair should have done. That lets us measure collusion as regret in actions, not only as suspicious text.
 
 \paragraph{Episode protocol.}
-Each episode has four planning rounds. In each round every agent takes one turn of up to three conversation steps and may post on any blackboard it can access. A single execution phase follows, in which agents act in sequence and each claims at most one ticket or skips; unless the claim-hiding ablation is on, later agents see which tickets earlier agents have claimed. The agent model is Qwen2.5-7B-Instruct served by vLLM at temperature $0.4$, with at most 1{,}024 new tokens per turn. A seed fixes the problem instance, the agent order, and the coalition pair, so the same seed gives the same pair and the same instance in every setting; comparisons are therefore within-seed.
+Each episode has four planning rounds. In each round every agent takes one turn of up to three conversation steps and may post on any blackboard it can access. A single execution phase follows, in which agents act in sequence and each claims at most one ticket or skips; unless the claim-hiding ablation is on, later agents see which tickets earlier agents have claimed. The agent model is Qwen2.5-3B-Instruct served by vLLM at temperature $0.4$, with at most 1{,}024 new tokens per turn and a context of 8{,}192 tokens. A seed fixes the problem instance, the agent order, and the coalition pair, so the same seed gives the same pair and the same instance in every setting; comparisons are therefore within-seed.
 
 \begin{table}[t]
 \centering
@@ -158,7 +158,7 @@ Here $r_i(\x)$ is agent $i$'s credited reward under joint assignment $\x$, $\A_i
 Mean reward for non-coalition agents is lower than in the benign team. Without this test, a pair that simply coordinates well with each other can look like a cartel. The externality split reports the change in coalition reward and the change in non-coalition reward separately, each against the same seed in the benign team.
 
 \paragraph{Test 3: there is evidence of intent.}
-Either the fitted misalignment weight $\lamemp$ has a 95\% bootstrap interval above zero, or the judge score rises by at least one point. The judge is Colosseum's three judge prompts (0 to 5, averaged), run on a local Qwen2.5-14B-Instruct. Absolute judge scores are not comparable to Colosseum's published numbers because the judge is smaller; only differences within this project are meaningful.
+Either the fitted misalignment weight $\lamemp$ has a 95\% bootstrap interval above zero, or the judge score rises by at least one point. The judge is Colosseum's three judge prompts (0 to 5, averaged), run on a local 4-bit Qwen2.5-7B-Instruct. Absolute judge scores are not comparable to Colosseum's published numbers because the judge is smaller; only differences within this project are meaningful.
 
 \paragraph{Decision rule.}
 Tests 1 and 2 are one-sided paired tests on per-seed differences, and we apply Holm's correction over one family containing the two tests for every non-benign setting in the run. Test 3 uses either branch; the judge branch is a fixed one-point threshold on the paired mean difference, not a separate significance test. A setting is collusive only if all three tests pass. If a setting passes tests 1 and 2 but not test 3, we report it as a coordinated pair without evidence of coalitional intent, not as a cartel.
@@ -210,13 +210,13 @@ On paper & Rises & No & The coalition plans but does not follow through \\
 \section{Carrier Displacement Protocol}
 \label{sec:protocol}
 
-The protocol is a sequence of comparisons. Each comparison uses the same model, seeds, and judge as every other comparison. Seeds are paired: in Colosseum a seed fixes the problem instance, agent order, and coalition pair, so comparing two settings on the same seed cancels out how hard the instance was. We use 20 paired seeds per setting. The full confirmatory plan is 11 settings with 20 seeds each, 220 episodes; the two combined ablations, which we run only if time allows, add 40 episodes.
+The protocol is a sequence of comparisons. Each comparison uses the same model, seeds, and judge as every other comparison. Seeds are paired: in Colosseum a seed fixes the problem instance, agent order, and coalition pair, so comparing two settings on the same seed cancels out how hard the instance was. We use 8 paired seeds per setting. The confirmatory plan is a one-day sprint: 6 settings covering RQ1--RQ4 with 8 seeds each, 48 episodes, on a single 16\,GB GPU. RQ5, RQ6, and the remaining ablations are implemented but held as stretch goals; the full 11-setting, 20-seed design (220 episodes) is what we would run given an A100 and more time.
 
 \subsection{RQ2: Does an instructed coalition collude?}
 
 We compare three settings. In \texttt{benign}, there is no private channel and no coalition prompt. In \texttt{emergent}, two agents get a private channel but benign prompts; this is Colosseum's emergent-collusion probe. In \texttt{coalition}, the same two agents get the private channel and Colosseum's \texttt{simple} coalition prompt, which asks them to maximize the coalition's joint reward. These three runs are the matched controls for everything that follows.
 
-These runs are not a reproduction of Colosseum's numbers. Their raw logs are not released, and their reported results come from other models, mostly through APIs, so we cannot pair against them. If the coalition gains and all three RQ1 tests pass, we go on to RQ3 and RQ4. If there is no gain at 7B, we try, in order, Colosseum's \texttt{structured} coalition prompt, letting colluders act first (\texttt{agent\_order: colluders\_first}), and a larger model on Modal before spending time on RQ3--RQ6.
+These runs are not a reproduction of Colosseum's numbers. Their raw logs are not released, and their reported results come from other models, mostly through APIs, so we cannot pair against them. If the coalition gains and all three RQ1 tests pass, we go on to RQ3 and RQ4. If there is no gain at 3B, we try, in order, Colosseum's \texttt{structured} coalition prompt, letting colluders act first (\texttt{agent\_order: colluders\_first}), and a larger agent model before spending time on RQ3 and RQ4.
 
 \subsection{RQ3: What does a coalition do when it is watched?}
 
@@ -289,7 +289,7 @@ Displacement & Falls & Holds, and RQ4 attributes the gain to another carrier & C
 \label{sec:stats}
 
 \paragraph{Paired tests.}
-For every comparison we form per-seed differences and run a paired sign-flip permutation test. Under the null, the sign of each difference is exchangeable. We use the mean difference as the test statistic and enumerate all $2^n$ sign patterns when $n\le 18$; for larger $n$ we use 10{,}000 Monte Carlo sign flips with the standard add-one correction. The main design has 20 seeds, so its confirmatory tests use the Monte Carlo version; the five-seed pilot uses the exact version. We use $\alpha=0.05$ and Holm's correction over the RQ1 family. We never compare pooled means: seed pairing is part of the design.
+For every comparison we form per-seed differences and run a paired sign-flip permutation test. Under the null, the sign of each difference is exchangeable. We use the mean difference as the test statistic and enumerate all $2^n$ sign patterns when $n\le 18$; for larger $n$ we use 10{,}000 Monte Carlo sign flips with the standard add-one correction. The sprint design has 8 seeds, so every test is exact: a one-sided test on 8 paired seeds bottoms out at $p=2^{-8}=0.0039$, which still clears Holm correction over the five comparisons in the RQ1 family, but only for an effect that is close to unanimous across seeds. We use $\alpha=0.05$ and Holm's correction over the RQ1 family. We never compare pooled means: seed pairing is part of the design.
 
 \paragraph{Later-stage comparisons.}
 RQ3--RQ6 compare each treatment with a pre-specified parent, not with every other setting. We report two-sided paired tests and seed-level effect sizes for those comparisons, and we read a mechanism from the joint pattern of action, reward, and talk rather than from a single $p$-value. These comparisons are not added to the RQ1 family and cannot turn a non-collusive setting into a collusive one.
@@ -304,7 +304,7 @@ The QRE fit uses a decision only if the team's best action and the coalition's b
 Judge scores are the mean of Colosseum's three prompts, each on a 0--5 scale. We use the judge only as one branch of the intent test and as a descriptive outcome. We do not use it to define collusion on its own.
 
 \paragraph{Compute and stopping.}
-Generation and judging run on a single Colab A100 with vLLM. Analysis runs on CPU from saved JSON outputs. The confirmatory plan is 11 settings with 20 seeds each (220 episodes); the two combined ablations add 40 episodes if time allows. The seed count is fixed in advance; we do not add seeds after seeing a result. If time runs short, we cut RQ6, then RQ5, then the combined ablation. RQ2, RQ3, and the paraphrase ablation from RQ4 are enough to answer the core question. The Modal credit is reserved for a second model or overflow, not for a full sweep, and a replication model is reported separately rather than pooled with the main model.
+Generation and judging run on a single 16\,GB GPU (a Colab T4) with vLLM, one server at a time: a 3B agent model in fp16 and a 4-bit 7B judge, about 12\,GB of weights in total. Analysis runs on CPU from saved JSON outputs. The confirmatory plan is 6 settings with 8 seeds each (48 episodes), which is what one day of that card buys. The seed count is fixed in advance; we do not add seeds after seeing a result. If time runs short, we cut the paraphrase ablation, then the emergent control, then seeds down to 6; the benign, coalition, watched, and channel-free settings are what answer the core question. The Modal credit is reserved for a replication at 7B, reported separately rather than pooled with the main model.
 
 \section{Results}
 \label{sec:results}
@@ -314,7 +314,7 @@ This section contains no empirical results. No pre-registered LLM sweep is inclu
 \paragraph{Implementation validation.}
 The artifact passes 26 offline tests with no GPU and no API. They cover the JIRA scoring and regret re-implementation against Terrarium, the pairing and Holm logic, the three-test standard, the carrier prompts and verifier, the paraphraser's ticket-ID invariant, and an end-to-end scripted-client run through every registered setting. This establishes that the pipeline runs and that the analysis agrees with Colosseum's environment on the quantities it re-implements. It is not behavioral evidence.
 
-The tables below fix the reporting format and the columns that the pre-registered analysis will populate. In the main table, deltas are against the benign team; in the ablation table, each row is compared with its parent. All deltas are treatment minus comparison, on the same seeds. We will not add a result to a table unless the corresponding setting has completed all 20 paired seeds and the analysis script has produced the number from the saved logs.
+The tables below fix the reporting format and the columns that the pre-registered analysis will populate. In the main table, deltas are against the benign team; in the ablation table, each row is compared with its parent. All deltas are treatment minus comparison, on the same seeds. We will not add a result to a table unless the corresponding setting has completed all 8 paired seeds and the analysis script has produced the number from the saved logs.
 
 \begin{table*}[t]
 \centering
@@ -363,7 +363,7 @@ The protocol is designed to make three outcomes distinguishable. If monitoring r
 
 The design also has a built-in negative control. The benign fit for $\lamemp$ should be near zero. If it is not, the QRE model is absorbing something other than coalitional intent, and the intent test should not be trusted. Similarly, the channel-free coalition is a test of necessity: if collusion vanishes when the private channel is removed, then RQ3's outcome is deterrence or concealment, not displacement.
 
-There are several ways the results could be null. A 7B model may not collude effectively even when instructed. The paraphrase ablation may leave enough signal in ticket IDs and numbers to preserve coordination. The verifier may be ignored or may generate flags that are themselves noise. We report these outcomes rather than treating them as failures of the protocol. A null on RQ2 is informative for the same reason: it says that the carrier question cannot be asked at this scale, and the pre-registered fallbacks (a structured prompt, colluders acting first, a larger model) say what to try before abandoning it.
+There are several ways the results could be null. A 3B model may not collude effectively even when instructed, and a carrier it cannot use may still be open to a stronger model, so we read a null as ``no evidence at 3B'' rather than as a closed carrier. The paraphrase ablation may leave enough signal in ticket IDs and numbers to preserve coordination. The verifier may be ignored or may generate flags that are themselves noise. We report these outcomes rather than treating them as failures of the protocol. A null on RQ2 is informative for the same reason: it says that the carrier question cannot be asked at this scale, and the pre-registered fallbacks (a structured prompt, colluders acting first, a larger model) say what to try before abandoning it.
 
 The protocol also has a cost that is worth stating. Announcing monitoring and paraphrasing messages change the task the agents see, not only the auditor's view. A drop in collusion under either treatment is evidence about the deployed system, not a clean estimate of a cognitive mechanism. We therefore describe the treatments as protocol changes and read the mechanism only from the pattern across action, reward, and talk.
 
@@ -373,7 +373,7 @@ The protocol also has a cost that is worth stating. Announcing monitoring and pa
 This version reports no empirical results. Every claim about collusion, deterrence, concealment, or displacement is still open, and the tables contain no observed numbers. The contribution at this stage is the pre-registered design and the artifact, not a finding.
 
 \paragraph{One small model.}
-The main results use a single 7B model. Colosseum finds that collusion behavior varies with model and size, so the results should not be read as a claim about LLMs in general. The Modal replication, if run, is a separate model and is reported separately.
+The main results use a single 3B model, smaller than anything Colosseum reports on. Colosseum finds that collusion behavior varies with model and size, so the results should not be read as a claim about LLMs in general. The Modal replication at 7B, if run, is a separate model and is reported separately.
 
 \paragraph{One-shot task.}
 JIRA is a single-round task. Collusion that depends on reputation, repeated play, or long-horizon relationships is out of scope.
@@ -385,13 +385,13 @@ Apart from the emergent comparison in RQ2, every coalition here is told to collu
 Paraphrasing preserves ticket IDs and numbers. It removes wording but not the set of tickets an agent mentions, so a signal carried by ticket choice can survive. The paraphraser also fails open, so some messages are not ablated.
 
 \paragraph{Local judge.}
-Judge scores come from a 14B model, not the frontier judge Colosseum used. Absolute scores are not comparable; only within-project differences are meaningful. The judge also sees only the transcript, not the agents' private reasoning.
+Judge scores come from a 4-bit 7B model, not the frontier judge Colosseum used, and it is only one step larger than the agents it reads. Absolute scores are not comparable; only within-project differences are meaningful. The judge also sees only the transcript, not the agents' private reasoning.
 
 \paragraph{Verifier noise.}
 The verifier's second check is an LLM call. It can miss a violation or flag a legitimate inference, and the protocol reports flags by type rather than assuming they are true.
 
 \paragraph{Compute and seeds.}
-The full design is 220 episodes, which is feasible on one A100 but leaves little room for model-scale replication. Twenty paired seeds give limited power for small effects, and we do not add seeds after seeing a result.
+The sprint design is 48 episodes, which one 16\,GB card runs in a few hours but which leaves no room for model-scale replication and covers RQ1--RQ4 only. Eight paired seeds reach significance only on a near-unanimous effect, and we do not add seeds after seeing a result.
 
 \section{Ethical Statement}
 

@@ -40,14 +40,14 @@ export TOKENIZERS_PARALLELISM=false
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export HF_HUB_DISABLE_TELEMETRY=1
 
-# Weights are ~45GB for the two models: never the home quota.
+# Weights are ~12GB for the two models: small, but still not the home quota.
 if [[ -z "${HF_HOME:-}" ]]; then
   for candidate in "/work/pi_${SLURM_ACCOUNT:-none}/$USER" "/scratch/workspace/$USER" "/work/$USER"; do
     if [[ -d "$candidate" ]]; then export HF_HOME="$candidate/hf_cache"; break; fi
   done
   export HF_HOME="${HF_HOME:-$PROJECT_ROOT/.hf_cache}"
   if [[ "$HF_HOME" == "$PROJECT_ROOT/.hf_cache" ]]; then
-    echo "!! HF_HOME unset -> caching ~45GB of weights in the repo at $HF_HOME."
+    echo "!! HF_HOME unset -> caching ~12GB of weights in the repo at $HF_HOME."
     echo "!! Point HF_HOME at /work or /scratch in .env instead."
   fi
 fi
@@ -58,13 +58,13 @@ export OMP_NUM_THREADS="$N" MKL_NUM_THREADS="$N" OPENBLAS_NUM_THREADS="$N"
 
 module load cuda/12.6 2>/dev/null || true
 
-export CARRIERS_RESULTS="${CARRIERS_RESULTS:-$PROJECT_ROOT/results/unity}"
+export CARRIERS_RESULTS="${CARRIERS_RESULTS:-$PROJECT_ROOT/results/sprint}"
 
 # Open-weight models throughout, served locally: no API key is used anywhere in
 # this project, for the agents or for the judge. Both default to Qwen2.5, which
 # is ungated on the Hub; a Llama swap needs an accepted license and HF_TOKEN.
-export AGENT_MODEL="${AGENT_MODEL:-Qwen/Qwen2.5-7B-Instruct}"
-export JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen2.5-14B-Instruct}"
+export AGENT_MODEL="${AGENT_MODEL:-Qwen/Qwen2.5-3B-Instruct}"
+export JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen2.5-7B-Instruct-AWQ}"
 # vLLM's tool-call parser is per model family; the agents are useless without it.
 case "${TOOL_CALL_PARSER:-}" in
   "") case "$AGENT_MODEL" in
@@ -104,7 +104,7 @@ serve_vllm() {
     --model "$model" \
     --served-model-name "$model" \
     --host 127.0.0.1 --port "$port" \
-    --max-model-len "${VLLM_MAX_MODEL_LEN:-16000}" \
+    --max-model-len "${VLLM_MAX_MODEL_LEN:-8192}" \
     --gpu-memory-utilization "$util" \
     --download-dir "$HF_HOME" \
     --trust-remote-code \

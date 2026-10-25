@@ -19,7 +19,7 @@ communication_network:
   consolidate_channels: true
 
 llm_models:
-  - label: qwen2.5-7b
+  - label: qwen2.5-3b
     llm:
       provider: vllm
       vllm:
@@ -33,12 +33,12 @@ llm_models:
           max_tokens: 1024
           temperature: 0.4
         models:
-          - checkpoint: "Qwen/Qwen2.5-7B-Instruct"
+          - checkpoint: "Qwen/Qwen2.5-3B-Instruct"
             host: "127.0.0.1"
             port: 8020
             tensor_parallel_size: 1
             gpu_memory_utilization: 0.85
-            max_model_len: 16000
+            max_model_len: 8192
             trust_remote_code: true
             additional_args:
               - "--enable-auto-tool-choice"

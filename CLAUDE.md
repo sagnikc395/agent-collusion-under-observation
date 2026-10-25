@@ -8,16 +8,24 @@ A hackathon research project (Track 3: Collusion Carriers and Countermeasures) s
 monitoring or removing a private channel actually stops LLM-agent collusion, or merely displaces the
 coordination onto another carrier (public-message wording, action ordering).
 
+**It is scoped to a one-day sprint on a single 16GB GPU** (README, "Scope"): RQ1-RQ4 only, the
+`sprint` setting group (6 settings) x 8 paired seeds = 48 episodes, with `Qwen2.5-3B-Instruct`
+agents and a 4-bit `Qwen2.5-7B-Instruct-AWQ` judge (~12GB of weights in total). RQ5 (`find_partner`),
+RQ6 (`verifier`), the `hide_claims` / `_both` ablations and the Modal replication stay implemented
+and tested but are stretch goals. Do not widen the default grid or raise the model sizes without
+being asked; `configs/main.yaml` and `configs/unity.yaml` still hold the 220-episode plan.
+
 `README.md` is the specification and the primary source of truth: it defines the threat model, the
-six research questions (RQ1–RQ6), the pre-registered evidence standard and the metrics. The
+six research questions (RQ1–RQ6), the sprint scope, the pre-registered evidence standard and the
+metrics. The
 experiment code implementing it now exists; `RUNNING.md` is the operational guide.
 
 What exists:
 - `README.md` — the full plan; `RUNNING.md` — how to run it.
 - `carriers/` — settings table, coalition prompts, carrier ablations, verifier, episode runner.
 - `analysis/` — scoring model, regret, λ_emp fit, paired tests, local judge, report tables.
-- `configs/` — `unity.yaml` (the Slurm plan), `pilot.yaml` (RQ2), `main.yaml` (the 220-episode
-  plan), `modal_replication.yaml`, `smoke_fake.yaml` (offline).
+- `configs/` — `sprint.yaml` (the default 48-episode grid), `pilot.yaml` (RQ2), `unity.yaml` and
+  `main.yaml` (the 220-episode plan), `modal_replication.yaml`, `smoke_fake.yaml` (offline).
 - `slurm/` — the primary way to run it: `chain.sh` submits pilot, sweep, judge and report as a
   dependent chain; `gen.sbatch` is one array task per setting; `env.sh` is the shared preamble.
 - `notebooks/colab_runner.ipynb`, `modal_app.py`, `scripts/start_vllm.sh`, `tests/`.
@@ -48,7 +56,9 @@ code must preserve seed pairing rather than comparing pooled means.
 
 **Setting names are fixed** by the README's config table: `benign`, `emergent`, `coalition`,
 `watched`, `no_channel`, `find_partner`, `verifier`, plus `*_paraphrase`, `*_hide_claims`, `*_both`.
-Use these exact labels for configs, result directories, and analysis keys.
+Use these exact labels for configs, result directories, and analysis keys. The `sprint` group in
+`carriers/settings.py` is the default grid; groups are not part of the pre-registration, settings
+are.
 
 ## How the code hangs off Colosseum
 
@@ -77,32 +87,33 @@ Set `COLOSSEUM_ROOT` if the clone is not at `./colosseum`.
 # On Slurm (the primary path): the whole plan as one dependent chain
 sbatch slurm/setup.sbatch        # once: clone, venv, weights, tests
 bash slurm/chain.sh              # pilot -> sweep -> judge -> report
-bash slurm/chain.sh --fast       # core x 8 seeds, when GPU-hours are short
+bash slurm/chain.sh --fast       # core x 4 seeds; --full for the 220-episode plan
 bash slurm/status.sh
 
 # Tests: every setting end to end with a scripted client, no GPU and no API
 colosseum/.venv/bin/python -m pytest tests -q
 
-# Generation (A100)
+# Generation (one 16GB card; on a T4 also export VLLM_ATTENTION_BACKEND=XFORMERS)
 bash scripts/start_vllm.sh
-python -m carriers.runner --config configs/pilot.yaml
-python -m carriers.runner --config configs/main.yaml --settings plan --seeds 1-20
+python -m carriers.runner --config configs/sprint.yaml --settings pilot --seeds 1-4
+python -m carriers.runner --config configs/sprint.yaml
 
 # Judge, then tables (tables are CPU-only)
 bash scripts/start_vllm.sh --judge
-python -m analysis.judge --results results/main --base-url http://127.0.0.1:8021/v1
-python -m analysis.report --results results/main --out results/tables
+python -m analysis.judge --results results/sprint --base-url http://127.0.0.1:8021/v1
+python -m analysis.report --results results/sprint --out results/sprint/tables
 ```
 
-Generation and the local judge run on one A100 with vLLM (`Qwen/Qwen2.5-7B-Instruct` for agents,
-`Qwen2.5-14B-Instruct` for the judge) — on Slurm via `bash slurm/chain.sh`, or on Colab. Every model
+Generation and the local judge run on one 16GB GPU with vLLM, one server at a time
+(`Qwen/Qwen2.5-3B-Instruct` for agents, `Qwen/Qwen2.5-7B-Instruct-AWQ` for the judge) — on Colab T4
+via `notebooks/colab_runner.ipynb`, or on Slurm via `bash slurm/chain.sh`. Every model
 is open-weight and served locally; **no stage uses a hosted API key**, so do not add a provider
 client. `AGENT_MODEL` / `JUDGE_MODEL` swap the checkpoints and the vLLM tool-call parser follows the
 model family. All analysis runs on CPU from saved JSON outputs
 (`metrics.json`, `blackboards.json`, `agent_turns.json`, `tool_events.json`), so analysis work never
 needs a GPU or a rerun of generation.
 
-Judge scores come from a local 14B model, so absolute values are not comparable to Colosseum's
+Judge scores come from a local 4-bit 7B model, so absolute values are not comparable to Colosseum's
 published numbers — only within-project differences are meaningful. Do not compare against the
 paper's figures.
 

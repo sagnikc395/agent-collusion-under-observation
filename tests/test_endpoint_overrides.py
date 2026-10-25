@@ -35,13 +35,13 @@ def test_override_rewrites_host_port_and_disables_auto_start() -> None:
     assert entry["host"] == "10.0.0.5"
     assert entry["port"] == 41234
     # The checkpoint is untouched unless asked for.
-    assert entry["checkpoint"] == "Qwen/Qwen2.5-7B-Instruct"
+    assert entry["checkpoint"] == "Qwen/Qwen2.5-3B-Instruct"
 
 
 def test_override_can_swap_the_checkpoint() -> None:
-    cfg = apply_endpoint_overrides(_unity_cfg(), port=1, checkpoint="Qwen/Qwen2.5-14B-Instruct")
+    cfg = apply_endpoint_overrides(_unity_cfg(), port=1, checkpoint="Qwen/Qwen2.5-7B-Instruct")
     assert cfg["llm_models"][0]["llm"]["vllm"]["models"][0]["checkpoint"] == (
-        "Qwen/Qwen2.5-14B-Instruct"
+        "Qwen/Qwen2.5-7B-Instruct"
     )
 
 

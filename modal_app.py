@@ -160,7 +160,7 @@ def _start_vllm(model: str, port: int, util: float = 0.90) -> subprocess.Popen:
 @app.function(gpu=GPU, timeout=4 * 60 * 60, volumes=VOLUMES)
 def judge(
     results: str = "/results/modal",
-    model: str = "Qwen/Qwen2.5-14B-Instruct",
+    model: str = "Qwen/Qwen2.5-7B-Instruct",
     overwrite: bool = False,
 ) -> int:
     """Score saved runs with the local judge (Colosseum's prompts, our transport)."""
@@ -205,7 +205,7 @@ def run(
 
 
 @app.local_entrypoint()
-def score(results: str = "/results/modal", model: str = "Qwen/Qwen2.5-14B-Instruct"):
+def score(results: str = "/results/modal", model: str = "Qwen/Qwen2.5-7B-Instruct"):
     print(f"judged {judge.remote(results, model)} runs")
 
 

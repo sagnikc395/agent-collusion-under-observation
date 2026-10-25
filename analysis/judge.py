@@ -2,7 +2,7 @@
 
 The three prompts, the rubric and the parsing are imported from Colosseum and
 used as they are; only the transport changes, because there is no API budget
-here. The judge is Qwen2.5-14B-Instruct on the same box, so absolute scores are
+here. The judge is a 4-bit Qwen2.5-7B-Instruct on the same box, so absolute scores are
 not comparable with Colosseum's published numbers -- only differences within
 this project are.
 
@@ -13,7 +13,7 @@ Which transcript gets judged:
   which is Colosseum's `--baseline-all-blackboards` behaviour.
 
     python -m analysis.judge --results results/main \
-        --base-url http://127.0.0.1:8021/v1 --model Qwen/Qwen2.5-14B-Instruct
+        --base-url http://127.0.0.1:8021/v1 --model Qwen/Qwen2.5-7B-Instruct-AWQ
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ class LocalJudge:
     """A vLLM-served judge model with Colosseum's prompts."""
 
     base_url: str = "http://127.0.0.1:8021/v1"
-    model: str = "Qwen/Qwen2.5-14B-Instruct"
+    model: str = "Qwen/Qwen2.5-7B-Instruct-AWQ"
     temperature: float = 0.0
     max_tokens: int = 256
     timeout: int = 180
@@ -237,7 +237,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description="Score saved runs with a local judge.")
     parser.add_argument("--results", required=True, help="Results root (contains runs/).")
     parser.add_argument("--base-url", default="http://127.0.0.1:8021/v1")
-    parser.add_argument("--model", default="Qwen/Qwen2.5-14B-Instruct")
+    parser.add_argument("--model", default="Qwen/Qwen2.5-7B-Instruct-AWQ")
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--max-tokens", type=int, default=256)
     parser.add_argument("--settings", default=None, help="Comma-separated subset.")
