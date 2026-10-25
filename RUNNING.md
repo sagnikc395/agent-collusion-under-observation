@@ -100,6 +100,7 @@ so loudly.
 | `configs/` | `sprint.yaml` (the default grid), `pilot.yaml`, `unity.yaml`, `main.yaml`, `modal_replication.yaml`, `smoke_fake.yaml` |
 | `analysis/` | Regret, lambda_emp, paired tests, local judge, report tables |
 | `scripts/start_vllm.sh` | Serve a model by hand (laptop or interactive node) |
+| `scripts/embed_results.py` | Fold the tables back into a notebook (CPU) |
 | `notebooks/colab_runner.ipynb` | Colab T4 entry point: the sprint, end to end |
 | `modal_app.py` | The same sweep on Modal, for the larger replication model (stretch) |
 | `tests/` | Offline wiring checks (no GPU, no API) |
@@ -239,7 +240,19 @@ tasks can share a node, so the port in the YAML is only this fallback.
 ## Other backends
 
 `notebooks/colab_runner.ipynb` runs the same stages on a Colab T4 (mounts Drive,
-clones both repos, then pilot, sweep, judge, report). `modal_app.py` runs the
+clones both repos, then pilot, sweep, judge, report). Its last section writes the
+results back into the notebook, so one `.ipynb` carries both the run and its tables:
+
+```bash
+python scripts/embed_results.py --notebook notebooks/colab_runner.ipynb \
+    --tables results/sprint/tables --results results/sprint \
+    --out results/sprint/colab_runner_results.ipynb
+```
+
+It appends `report.md`, `rq1_evidence.csv`, `lambda_fits.csv`, `report.json` and the
+per-setting episode counts as markdown cells tagged `carriers_embedded_results`, and
+replaces that section on a re-run instead of appending a second copy. Omit `--out` to
+write in place. `modal_app.py` runs the
 sweep on Modal for the larger replication model, which is a stretch goal:
 
 ```bash

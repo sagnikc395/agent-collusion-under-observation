@@ -32,8 +32,8 @@
 
 \title{Where Does Coalition Coordination Go When You Watch It?\\
 Carrier Displacement and Countermeasures for LLM Agent Collusion}
-\author{Anonymous Submission}
-\affiliations{}
+\author{Sagnik Chatterjee}
+\affiliations{Independent Researcher\\ sagnikchatterjee607@gmail.com}
 
 \begin{document}
 
@@ -58,7 +58,10 @@ We organize the project as six research questions (RQs). RQ1 fixes what counts a
 This paper makes four contributions. First, it gives a pre-registered evidence standard for collusion in agent logs, combining an action test, an externality test, and an intent test, supported by coalitional regret and a maximum-likelihood estimator for Colosseum's empirical misalignment weight. Second, it gives a carrier-displacement protocol that separates deterrence, concealment, and displacement through monitoring, channel removal, and carrier ablations. Third, it specifies measured tests of peer identification and of a trusted verifier, both of which Colosseum recommends or leaves open. Fourth, it releases an implementation and an analysis library that recompute the numbers behind every table on CPU from saved logs, without new generation.
 
 \paragraph{Status.}
-This version is a registered protocol. Sections~\ref{sec:evidence}--\ref{sec:stats} were fixed before any LLM episode was generated, and the result tables in Section~\ref{sec:results} are empty by design. The only runs in this repository are offline wiring checks with a scripted client; that client is not a language model, so its outputs say nothing about collusion and are excluded from every table. We mark every number that has not been observed.
+This version is a registered protocol. Sections~\ref{sec:evidence}--\ref{sec:stats} were fixed before any LLM episode was generated, and the result tables in Section~\ref{sec:results} are empty by design. The only runs in this repository are offline wiring checks with a scripted client; that client is not a language model, so its outputs say nothing about collusion and are excluded from every table. We mark every number that has not been observed. Section~\ref{sec:results} says what this does and does not establish, and we do not claim a finding about collusion anywhere in the paper.
+
+\paragraph{New work and prior work.}
+Everything in the artifact --- the settings table and coalition prompt variants, the carrier ablations, the verifier, the episode runner, the CPU scoring and regret model, the $\lamemp$ estimator, the paired-test and reporting code, the configs, the Slurm and Colab harnesses, and the test suite --- was written during the sprint. No part of this repository predates it. The preexisting components we build on are all external and used unmodified: Colosseum \citep{nakamura2026colosseum} and its Terrarium environment library, which supply the JIRA environment, the regret metrics and the judge prompts; the Qwen2.5 open-weight checkpoints; and vLLM. Our changes live in a separate module rather than in Colosseum's tree, so the dividing line between their code and ours is the repository boundary.
 
 \section{Related Work}
 
@@ -309,10 +312,37 @@ Generation and judging run on a single 16\,GB GPU (a Colab T4) with vLLM, one se
 \section{Results}
 \label{sec:results}
 
-This section contains no empirical results. No pre-registered LLM sweep is included in this version; the repository contains the implementation, the analysis library, and offline wiring checks only. We do not populate a cell from a partial sweep, and we do not report the scripted-client runs: that client emits fixed messages and claims tickets by hash, so any collusion metric computed on it measures the script rather than a language model.
+This section contains no empirical results on language-model agents. The sprint produced the implementation, the analysis library, and offline wiring checks; the GPU sweep did not run inside the sprint window. We do not populate a cell from a partial sweep, and we do not report the scripted-client runs: that client emits fixed messages and claims tickets by hash, so any collusion metric computed on it measures the script rather than a language model.
 
-\paragraph{Implementation validation.}
-The artifact passes 26 offline tests with no GPU and no API. They cover the JIRA scoring and regret re-implementation against Terrarium, the pairing and Holm logic, the three-test standard, the carrier prompts and verifier, the paraphraser's ticket-ID invariant, and an end-to-end scripted-client run through every registered setting. This establishes that the pipeline runs and that the analysis agrees with Colosseum's environment on the quantities it re-implements. It is not behavioral evidence.
+\paragraph{The positive control is absent, and nothing downstream is readable without it.}
+The pre-registered positive control is RQ2's \texttt{coalition} setting against the matched \texttt{benign} team on the same seeds: two agents with a private channel and an explicit instruction to maximize their joint reward should show a coalition action advantage, a loss for the other four agents, and either a positive $\lamemp$ or a judge-score rise. It is a control in the strict sense --- it checks that the measurement apparatus can see collusion that we know is there, at 3B, in this environment. We have not run it. Every downstream comparison in Tables~\ref{tab:main-results} and~\ref{tab:ablation-results} is a difference from a coalition whose collusion is unverified, so a drop under monitoring or channel removal would be uninterpretable: it could be deterrence, or it could be that there was nothing to remove. The matching negative control, the $\lamemp$ fit on the designated pair in the \texttt{benign} team, is equally unrun. We therefore report no collusion finding, and the protocol's first spend of GPU time is the control, not a treatment.
+
+\paragraph{What did get measured.}
+The artifact passes 30 offline tests on CPU, with no GPU and no API (Table~\ref{tab:tests}). The load-bearing one is the agreement check: \texttt{analysis/env\_model.py} re-implements the JIRA scoring rule in pure Python so that counterfactuals --- the $\max$ in Equations~\ref{eq:unilateral} and~\ref{eq:coalreg} --- can be evaluated from a saved \texttt{instance.json} without the environment or a GPU. Over randomly sampled joint assignments it reproduces Terrarium's team score and per-agent credited rewards exactly, and its unilateral regret matches Colosseum's definition. The scripted-client run exercises all 13 registered settings end to end and writes Colosseum's file and key names, so Colosseum's own judge script reads our runs unchanged.
+
+This is engineering validation, not behavioral evidence. It supports one claim and no more: if the sweep is run, the numbers in the tables will be computed correctly and will be recomputable on CPU from the saved logs. It says nothing about whether coordination is displaced, concealed, or deterred.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.50\linewidth}rp{0.28\linewidth}@{}}
+\toprule
+What is checked & $n$ & Needs \\
+\midrule
+Score, reward and regret vs.\ Terrarium & 3 & Environment, CPU \\
+Pairing, Holm, three-test rule, $\lamemp$ fit & 8 & CPU \\
+Carrier prompts, verifier, paraphraser invariant & 7 & CPU \\
+Judge targets per setting & 4 & CPU \\
+Endpoint and model overrides & 4 & CPU \\
+End-to-end run, all 13 settings & 4 & Scripted client \\
+\midrule
+Total & 30 & \\
+\bottomrule
+\end{tabular}
+\caption{Offline test suite. No test involves a language model, and none is evidence about collusion.}
+\label{tab:tests}
+\end{table}
 
 The tables below fix the reporting format and the columns that the pre-registered analysis will populate. In the main table, deltas are against the benign team; in the ablation table, each row is compared with its parent. All deltas are treatment minus comparison, on the same seeds. We will not add a result to a table unless the corresponding setting has completed all 8 paired seeds and the analysis script has produced the number from the saved logs.
 
