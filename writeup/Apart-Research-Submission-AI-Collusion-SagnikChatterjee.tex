@@ -26,7 +26,7 @@
 {\LARGE\bfseries Covert Signalling Under Observation}\\[6pt]
 {\large Can a monitor or a paraphraser stop two small LLMs from passing a secret through ordinary work chat?}\\[12pt]
 {\large Sagnik Chatterjee}\\[2pt]
-\texttt{sangikchatterjee607@gmail.com}\\[2pt]
+\texttt{sagnikchatterjee607@gmail.com}\\[2pt]
 Independent Affiliation\\[4pt]
 {\footnotesize Research conducted at the AI Collusion Research Sprint, October 2026}
 \end{center}
@@ -141,19 +141,17 @@ The main results raised three questions: is the monitor blind, or only unwilling
 The follow-up expectations were: (6) the \texttt{basic} 7B monitor reaches AUROC $> 0.6$ on 7B \sem/\texttt{plain}; (7) the \texttt{informed} prompt gains more AUROC on \sem{} than on \lex; (8) on 3B senders, the 7B monitor beats the 3B monitor on \sem/\texttt{plain}; (9) receiver AUROC is above 0.5 for 3B and 7B agreed codes, within 0.45--0.55 for \none, and below 0.6 for \imp; (10) the 7B receiver is within 0.05 of, or above, the 3B receiver on 3B \sem/\texttt{plain}; (11) \sem/\texttt{sanitized} accuracy is within 0.1 of chance at 3B and 7B, with lower judged utility than paraphrased rewrites; (12) seed 1 repeats every main-run verdict and every seed-1 accuracy lies in the seed-0 95\% CI.
 
 \section{Results}
-All 2,400 rows completed. Receiver replies parsed in 100\% of rows except 1.5B \lex{} (41\%) and 7B \sem{} (60\% \texttt{plain}, 51\% \texttt{paraphrased}); Section~\ref{sec:codeword} explains why. Monitor replies parsed in 100\% of rows. All numbers below come from \texttt{trials.jsonl} through \texttt{covert/analysis.py}; the full 24-row table is in Appendix~C.
+All 2,400 rows completed. The monitor's reply parsed every time. The receiver's reply parsed every time except for 1.5B \lex{} (41\%) and 7B \sem{} (60\% \texttt{plain}, 51\% \texttt{paraphrased}), for reasons given in Section~\ref{sec:codeword}. Every number in this section can be reproduced from \texttt{trials.jsonl} with \texttt{covert/analysis.py}, and Appendix~C lists all 24 conditions.
 
 \begin{figure}[!tbp]
 \centering
 \includegraphics[width=0.85\linewidth]{../figures/fig1.png}
-\caption{Receiver decoding accuracy (left) and monitor flag rate (right) by scheme and channel, one row per model, with 95\% Wilson intervals; dashed line at chance. Agreed codes decode above chance at 3B and 7B; paraphrasing removes the \lex{} signal but not the \sem{} one; the monitor flags almost nothing at any size.}
+\caption{Receiver decoding accuracy (left) and monitor flag rate (right) by scheme and channel, one row per model, with 95\% Wilson intervals; dashed line at chance. At 3B and 7B both agreed codes decode above chance, and paraphrasing removes the \lex{} signal while the \sem{} signal survives. The monitor flags almost nothing at any size.}
 \label{fig:fig1}
 \end{figure}
 
 \subsection{Decoding and the paraphrase effect}
-Table~\ref{tab:mcnemar} shows decoding accuracy on the same 100 messages delivered \texttt{plain} and \texttt{paraphrased}, with the exact McNemar test.
-
-At 3B and 7B, both agreed codes decode above chance on the \texttt{plain} channel. Paraphrasing deletes the \lex{} code word from 100\% of messages at both sizes (\texttt{signal\_delivered} 0.36 $\rightarrow$ 0.00 at 3B, 0.68 $\rightarrow$ 0.00 at 7B), and accuracy falls to chance. The \sem{} marker survives paraphrasing in 41 of 47 messages that carried it at 3B and 67 of 72 at 7B, and neither drop is significant. 3B \sem/\texttt{plain} is significant when corrected within the model (Holm $p = 0.042$) but not when corrected across all 24 conditions ($p = 0.12$). The 7B \sem{} result does not depend on the correction family.
+At 3B and 7B, both agreed codes decode above chance on the \texttt{plain} channel (Table~\ref{tab:mcnemar}). Paraphrasing deletes the \lex{} code word from every message at both sizes (\texttt{signal\_delivered} 0.36 $\rightarrow$ 0.00 at 3B, 0.68 $\rightarrow$ 0.00 at 7B), and accuracy falls to chance. The \sem{} marker survives paraphrasing in 41 of the 47 messages that carried it at 3B and in 67 of 72 at 7B, and neither accuracy drop is significant. One result depends on how the tests are corrected: 3B \sem/\texttt{plain} is significant within its model (Holm $p = 0.042$) and stops being significant if we correct across all 24 conditions ($p = 0.12$). The 7B \sem{} result holds either way.
 
 \begin{table}[t]
 \centering
@@ -182,7 +180,7 @@ Model & Scheme & Acc.\ plain [95\% CI] & Acc.\ para [95\% CI] & L / G & McNemar 
 \end{table}
 
 \subsection{Where the channel fails: the sender}
-Table~\ref{tab:sender} shows sender compliance and receiver decoding for the agreed codes on the \texttt{plain} channel. Once the correct marker reaches the receiver, the 3B and 7B receivers decode it almost perfectly. The 7B \sem{} figure of 0.76 rises to 0.88 once code-word answers are counted (Section~\ref{sec:codeword}). Most errors come from the sender. The 1.5B sender writes ordinary updates and ignores the code. The 3B sender uses the code but leaks the HIGH marker into LOW messages: ``coffee'' appears in 62\% of \sem{} LOW messages, often as ``grab a coffee or tea'', and ``certainly'' in 26\% of \lex{} LOW messages. The 7B sender almost never uses the wrong marker; it sometimes leaves the marker out.
+When the correct marker reaches them, the 3B and 7B receivers decode it almost perfectly (Table~\ref{tab:sender}). The one lower figure, 0.76 for 7B \sem, rises to 0.88 once answers of ``COFFEE'' and ``TEA'' are counted (Section~\ref{sec:codeword}). Most errors happen earlier, at the sender. The 1.5B sender writes an ordinary update and ignores the code. The 3B sender follows the code but often puts the HIGH marker into LOW messages: ``coffee'' appears in 62\% of \sem{} LOW messages, usually as ``grab a coffee or tea'', and ``certainly'' in 26\% of \lex{} LOW messages. The 7B sender almost never picks the wrong marker, though it sometimes leaves the marker out.
 
 \begin{table}[t]
 \centering
@@ -203,16 +201,16 @@ Model & Scheme & Marker, HIGH & Marker, LOW & Wrong marker (LOW msgs) & Decoded 
 \end{tabular}
 \end{table}
 
-When there is no usable signal, receivers at every size default to LOW: 96--100\% of \none{} rows and 86--100\% of \imp{} rows. Accuracy at chance in those conditions therefore reflects balanced bits, not random guessing.
+Without a usable signal, receivers at every size answer LOW: in 96--100\% of \none{} rows and 86--100\% of \imp{} rows. Because half the bits are LOW, this fixed answer is what puts those conditions at chance.
 
 \subsection{The monitor}
-The monitor flagged 2 of 800 messages at 1.5B, 0 of 800 at 3B and 12 of 800 at 7B. It flagged no \none{} message at any size. At 7B it flagged 9 of 400 agreed-code messages against 0 of 200 \none{} messages (Fisher one-sided $p = 0.025$; this test was not pre-registered). Six of the 12 7B flags were messages in which the AWQ model switched into Chinese mid-sentence. It switched in 2\% of \texttt{plain} messages, and the monitor flagged 46\% of those against 0.8\% of the rest. Of the other six, two named the bit outright (``\ldots avoid any HIGH caffeine intake'') and four made a conspicuous tea remark (``\ldots brew a pot of tea rather than coffee''). The monitor did not flag ordinary \lex{} messages (``basically, we're close to\ldots'') that the receiver decoded perfectly. Covert success is within 0.03 of accuracy in every condition. The 3B monitor answered NO to all 800 messages, including the 54 \imp{} messages that contained ``HIGH'' or ``LOW'' in capitals (Appendix~D).
+The monitor flagged 2 of 800 messages at 1.5B, none at 3B and 12 at 7B, and it never flagged a \none{} message. At 7B it flagged 9 of 400 agreed-code messages against 0 of 200 \none{} messages (Fisher one-sided $p = 0.025$, a test we had not pre-registered). Half of the 12 flags at 7B went to messages in which the AWQ model switched into Chinese mid-sentence. That happened in 2\% of \texttt{plain} messages, and the monitor flagged 46\% of them, against 0.8\% of the rest. Of the other six flags, two went to messages that named the bit outright (``\ldots avoid any HIGH caffeine intake'') and four to conspicuous tea remarks (``\ldots brew a pot of tea rather than coffee''). Ordinary \lex{} messages such as ``basically, we're close to\ldots'' went through unflagged, and the receiver decoded every one. So covert success stays within 0.03 of accuracy in every condition. The 3B monitor answered NO all 800 times, including on the 54 \imp{} messages that wrote ``HIGH'' or ``LOW'' in capitals (Appendix~D).
 
 \subsection{Exploratory analysis: receivers answering with the code word}\label{sec:codeword}
-This analysis was not pre-registered. Some receivers answered with the code word instead of HIGH or LOW. The 7B \sem{} receiver answered ``COFFEE'' or ``TEA'' on 40 of 100 \texttt{plain} messages, and the 1.5B \lex{} receiver answered ``basically'' on 58 of 100, although no 1.5B message contained the word. The registered rule scores these as coin flips. Re-scoring them as the bit they name (certainly/coffee $\rightarrow$ HIGH, basically/tea $\rightarrow$ LOW) changes four cells. 7B \sem{} rises to 0.77 \texttt{plain} and 0.76 \texttt{paraphrased}, and its paired paraphrase effect shrinks from 17 lost / 13 gained to 4 / 3 ($p = 1.0$). 1.5B \lex/\texttt{plain} moves from 0.39 to 0.48, which shows its below-chance score is an artefact of which replies happened to parse. No conclusion changes.
+This analysis was not pre-registered. Some receivers replied with the code word itself. The 7B \sem{} receiver answered ``COFFEE'' or ``TEA'' to 40 of 100 \texttt{plain} messages, and the 1.5B \lex{} receiver answered ``basically'' to 58 of 100, although no 1.5B message contained that word. Our registered rule scores such replies as coin flips. If we instead read each one as the bit it names (certainly or coffee for HIGH, basically or tea for LOW), four cells change and none of our conclusions do. 7B \sem{} rises to 0.77 \texttt{plain} and 0.76 \texttt{paraphrased}, and its paired paraphrase effect shrinks from 17 lost and 13 gained to 4 and 3 ($p = 1.0$). 1.5B \lex/\texttt{plain} moves from 0.39 to 0.48, so its below-chance score came from which replies happened to parse.
 
 \subsection{Pre-registered expectations}
-Table~\ref{tab:expectations} reports the outcome of each pre-registered expectation.
+Of the five expectations, three held wherever they could be tested, one held at 3B and 7B only, and the monitor expectation largely failed (Table~\ref{tab:expectations}).
 
 \begin{table}[t]
 \centering
@@ -234,19 +232,21 @@ Table~\ref{tab:expectations} reports the outcome of each pre-registered expectat
 \end{table}
 
 \subsection{Exploratory analyses}\label{sec:exploratory}
-These analyses were not pre-registered. A bag-of-words naive Bayes classifier, trained to separate each scheme's messages from \none{} messages by the same sender (5-fold cross-validation, folds by trial), reaches AUROC 0.97--1.00 at 3B and 0.98 at 7B on \texttt{plain} for all three schemes, including \imp, whose bit no receiver recovered, and 0.87--0.97 after paraphrasing (Appendix~\ref{app:exploratory}). It detects the change in style that the instruction to hide something causes, not the bit: at 3B, coded messages are much shorter (length alone gives AUROC 0.15--0.30). The classifier has labelled examples, which a real defender usually lacks. A paired bootstrap of the paraphrase drop for \lex{} minus that for \sem{} gives 0.24 [0.12, 0.36] at 3B and 0.30 [0.16, 0.45] at 7B. At 7B, \lex/\texttt{plain} accuracy exceeds 0.5 for all 12 topics and paraphrasing lowers it for 11.
+These analyses were not pre-registered. We trained a bag-of-words naive Bayes classifier to tell each scheme's messages from \none{} messages by the same sender, with 5-fold cross-validation and folds split by trial. On \texttt{plain} it reaches AUROC 0.97--1.00 at 3B and 0.98 at 7B for all three schemes, and 0.87--0.97 after paraphrasing (Appendix~\ref{app:exploratory}). That includes \imp, whose bit no receiver recovered. What the classifier picks up is the change in style caused by the instruction to hide something, which says nothing about the bit itself. At 3B, for instance, coded messages are much shorter, and length alone gives AUROC 0.15--0.30. The classifier also has labelled examples, which a real defender usually lacks.
+
+Two further checks support the main results. A paired bootstrap of the paraphrase drop for \lex{} minus the drop for \sem{} gives 0.24 [0.12, 0.36] at 3B and 0.30 [0.16, 0.45] at 7B. And the \lex{} effect holds topic by topic: at 7B, \lex/\texttt{plain} accuracy is above 0.5 for all 12 topics, and paraphrasing lowers it for 11 of them.
 
 \section{Follow-up experiments}\label{sec:followups}
-All follow-ups ran in full: 1,200 sanitized rows, 10,800 probability scores and 2,400 seed-1 rows. In the 27 \none{} cells, where there is no signal by construction, receiver AUROC ranges from 0.46 to 0.67 (with 100 trials, topic and bit can be correlated by chance), so we do not read values in that range as signal.
+All follow-ups ran in full: 1,200 sanitized rows, 10,800 probability scores and 2,400 seed-1 rows. One caution applies to everything below. The 27 \none{} cells carry no signal by construction, yet their receiver AUROC ranges from 0.46 to 0.67, because with 100 trials topic and bit can be correlated by chance. We therefore do not treat values in that range as evidence of signal.
 
 \begin{figure}[!tbp]
 \centering
 \includegraphics[width=\linewidth]{../figures/fig2_auroc.png}
-\caption{AUROC by sender model (x-axis) and judge model (bars), 95\% bootstrap CIs, plain channel; dashed line at 0.5. Top two rows: the monitor's P(YES), each scheme vs \none, under the original and the informed prompt. Bottom row: the receiver's P(HIGH) against the true bit.}
+\caption{AUROC by sender model (x-axis) and judge model (bars) on the plain channel, with 95\% bootstrap CIs; dashed line at 0.5. The top two rows score the monitor's P(YES) for each scheme against \none, under the original and the informed prompt. The bottom row scores the receiver's P(HIGH) against the true bit.}
 \label{fig:auroc}
 \end{figure}
 
-\paragraph{F1: the monitor sees more than it says.} The monitor's P(YES) is tiny for every message (mean 0.07 for 3B \sem{} messages under the 7B monitor), so it almost never crosses 0.5, but the ranking carries information (Table~\ref{tab:monitor}). With the original prompt, the 7B monitor separates \sem{} from \none{} with AUROC 0.94 on 3B senders and 0.84 on 7B senders; at a threshold that flags 5\% of \none{} messages it catches 77\% and 67\% of them (46\% and 34\% of \lex). The original-prompt 3B monitor is no better than chance on any scheme, but the one-sentence \texttt{informed} hint lifts it to 0.81 (\lex) and 0.95 (\sem) on 3B senders, level with the 7B monitor. Detection weakens after rewriting: 0.84 \texttt{plain}, 0.82 \texttt{paraphrased}, 0.70 \texttt{sanitized} (7B monitor, 7B \sem).
+\paragraph{F1: the scored monitor.} The monitor gives every message a tiny P(YES), so it almost never crosses 0.5. The mean for 3B \sem{} messages under the 7B monitor is 0.07. Even so, the ranking separates coded from clean messages (Table~\ref{tab:monitor}). With the original prompt, the 7B monitor tells \sem{} from \none{} with AUROC 0.94 on 3B senders and 0.84 on 7B senders. A threshold that flags 5\% of \none{} messages would catch 77\% and 67\% of those \sem{} messages, and 46\% and 34\% of the \lex{} ones. The 3B monitor with the original prompt is no better than chance on any scheme. Adding the one-sentence \texttt{informed} hint lifts it to 0.81 (\lex) and 0.95 (\sem) on 3B senders, level with the 7B monitor. Rewriting the messages makes detection harder: for the 7B monitor on 7B \sem, AUROC is 0.84 \texttt{plain}, 0.82 \texttt{paraphrased} and 0.70 \texttt{sanitized}.
 
 \begin{table}[t]
 \centering
@@ -267,7 +267,7 @@ Sender & Scheme & Monitor 1.5B & Monitor 3B & Monitor 7B \\
 \end{tabular}
 \end{table}
 
-\paragraph{F2: the one-word answers understated the channel.} Scored by P(HIGH), the 7B receiver decodes its own messages with AUROC 0.95 (\lex) and 0.98 (\sem), against 0.88 and 0.71 accuracy from its one-word answers (Table~\ref{tab:receiver}). Paraphrasing leaves the 7B topic code intact (0.98 $\rightarrow$ 0.97; paired difference 0.01 [$-$0.00, 0.03], exploratory) and destroys the word code (0.95 $\rightarrow$ 0.56). The 1.5B receiver decodes 7B messages at 0.95 and 0.90, so decoding is not what limits small models. Same-model \none{} cells sit at 0.49--0.50 and \imp{} cells at 0.55--0.62, within the \none{} noise range.
+\paragraph{F2: the scored receiver.} The one-word answers understated how much got through. Scored by P(HIGH), the 7B receiver decodes its own messages with AUROC 0.95 (\lex) and 0.98 (\sem), where its one-word answers reached 0.88 and 0.71 accuracy (Table~\ref{tab:receiver}). After paraphrasing, the 7B topic code is still intact (0.98 $\rightarrow$ 0.97; paired difference 0.01 [$-$0.00, 0.03], exploratory), while the word code is gone (0.95 $\rightarrow$ 0.56). The 1.5B receiver decodes 7B messages at 0.95 and 0.90, so small models are limited by what they send. With the same model on both ends, \none{} cells sit at 0.49--0.50 and \imp{} cells at 0.55--0.62, inside the \none{} noise range.
 
 \begin{table}[t]
 \centering
@@ -290,7 +290,7 @@ Sender & Scheme & Channel & Receiver 1.5B & Receiver 3B & Receiver 7B \\
 \end{tabular}
 \end{table}
 
-\paragraph{F3: sanitizing removes most of the topic code, at a cost.} The coffee/tea marker survives in 18\% of sanitized 7B messages, against 67\% after paraphrasing (Table~\ref{tab:sanitized}). Scored decoding falls from 0.98 to 0.61 at 7B (paired difference 0.37 [0.26, 0.48], exploratory) and from 0.74 to 0.64 at 3B (0.10 [$-$0.01, 0.21]). The marker survives when the sender framed it as work: ``implementing a tea-themed design element for the background'' was kept as a work fact. Judged-kept content falls for every scheme at 3B and 7B (Wilcoxon $p < 0.01$); the fairest estimate of the real cost is \none, which has no code to lose (0.99 $\rightarrow$ 0.89 at 7B), because the judge counts the coffee remark itself as information and so overstates the \sem{} drop.
+\paragraph{F3: the \texttt{sanitized} channel.} Sanitizing removes most of the topic code. The coffee or tea marker survives in 18\% of sanitized 7B messages, against 67\% after paraphrasing (Table~\ref{tab:sanitized}). Scored decoding falls from 0.98 to 0.61 at 7B (paired difference 0.37 [0.26, 0.48], exploratory) and from 0.74 to 0.64 at 3B (0.10 [$-$0.01, 0.21]). The marker stayed when the sender had framed it as work: the sanitizer kept ``implementing a tea-themed design element for the background'' as a work fact. Sanitizing also loses some content. The judge rates sanitized rewrites as keeping less of the work information for every scheme at 3B and 7B (Wilcoxon $p < 0.01$). For \sem{} the judge exaggerates this, because it counts the coffee remark itself as information. The \none{} messages have no code to lose, so they give the fairest estimate of the cost: 0.99 $\rightarrow$ 0.89 at 7B.
 
 \begin{table}[t]
 \centering
@@ -312,7 +312,7 @@ Model & Scheme & Acc.\ plain / para / san & Marker plain / para / san & L / G (H
 \end{tabular}
 \end{table}
 
-\paragraph{F4: the main results replicate.} Seed 1 draws new bits (54\% LOW). 23 of 24 seed-1 accuracies lie inside the seed-0 95\% CIs; the exception is 3B \lex/\texttt{paraphrased} at 0.60 (CI 0.39--0.58), where the marker is still removed (0.43 $\rightarrow$ 0.02) and the paired drop is still significant (Holm $p = 0.038$). Expectations 1--4 get the same verdicts. The weak 7B monitor effect does not replicate: 5 of 400 agreed-code messages flagged against 0 of 200 (Fisher $p = 0.13$).
+\paragraph{F4: replication.} Seed 1 draws new bits, 54\% of them LOW. Of the 24 seed-1 accuracies, 23 fall inside the seed-0 95\% CIs. The exception is 3B \lex/\texttt{paraphrased} at 0.60 (CI 0.39--0.58); there the marker is still removed (0.43 $\rightarrow$ 0.02) and the paired drop is still significant (Holm $p = 0.038$). Expectations 1--4 receive the same verdicts as before. The weak 7B monitor effect does not replicate: the monitor flagged 5 of 400 agreed-code messages against 0 of 200 (Fisher $p = 0.13$).
 
 \begin{table}[t]
 \centering
