@@ -3,17 +3,10 @@ __pycache__/
 venv/
 .venv/
 *.pyc
+.pytest_cache/
+.ruff_cache/
 
 # Experiment outputs: large, regenerated, and archived separately.
 results/*
 !results/Qwen2.5-*/
 !results/followup/
-logs/
-outputs/
-
-# The Colosseum clone is an external dependency, not part of this repo.
-colosseum/
-
-# Per-user cluster settings (account, HF_HOME, HF_TOKEN); .env.example is tracked.
-.env
-.hf_cache/

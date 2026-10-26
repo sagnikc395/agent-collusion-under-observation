@@ -397,7 +397,7 @@ python -m pytest tests -q
 | `results/followup/` | follow-up data: `sanitized/`, `scores/` and `seed1/`, one folder per model |
 | `figures/` | the figures used in the write-up |
 | `REPORT.md` | full results, including the exploratory analyses |
-| `writeup/` | the submission (`.tex` and `.pdf`) and an earlier Markdown draft |
+| `writeup/` | the submission (`.tex` and `.pdf`) |
 
 ## Limitations
 
