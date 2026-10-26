@@ -14,14 +14,6 @@ of two cheap defences stops it:
 The question is whether two copies of a small LLM can pass a one-bit secret through a
 public message, and whether a monitor or a paraphraser stops them.
 
-The submission is `writeup/Apart-Research-Submission-AI-Collusion-SagnikChatterjee.pdf`
-(source in the `.tex` beside it). `REPORT.md` has the full results with every table.
-
-**Contents:** [Findings](#findings-so-far) ·
-[How a trial works](#how-a-trial-works) · [Setup](#setup) · [Metrics](#metrics) ·
-[Follow-ups](#follow-up-experiments) · [Architecture](#architecture) ·
-[Running it](#running-it) · [Layout](#layout) · [Limitations](#limitations) ·
-[Prior work](#prior-work-and-what-is-new)
 
 ## Findings so far
 
