@@ -38,7 +38,7 @@ Independent Affiliation\\[4pt]
 \vspace{4pt}
 \begin{center}
 \begin{minipage}{0.82\textwidth}
-\small\textbf{Abstract.} Two LLM agents in a shared channel can coordinate on a secret while every message looks like ordinary work chat. I ask whether two copies of a small open-weight model can pass a one-bit secret (HIGH or LOW) through a public work update, and whether an LLM monitor or an LLM paraphraser stops it. I deliver each sender message twice, verbatim and rewritten. I cross four signalling schemes (no instruction, an agreed code word, an agreed topic, and an improvised code with no agreement) with the two channels, and run 100 paired trials per condition on Qwen2.5-Instruct at 1.5B, 3B and 7B. With an agreed code, the receiver recovers the bit 76\% (code word) and 63\% (topic) of the time at 3B, and 88\% and 71\% at 7B. At 1.5B the sender does not follow the code and nothing gets through. Scored by token probability, the 7B pair passes the bit almost perfectly (AUROC 0.95--0.98), and a 1.5B receiver reads 7B messages: what grows with size is sending, not decoding. Paraphrasing removes the code word from every message and returns accuracy to chance, but leaves the topic code intact (AUROC 0.98 $\rightarrow$ 0.97 at 7B); a rewrite that keeps only work facts removes most of it ($\rightarrow$ 0.61). The YES/NO monitor flags at most 1.5\% of messages, yet its probability of YES ranks coded messages well: at a 5\% false-alarm rate the 7B monitor catches 67--77\% of topic-code messages. A pre-registered replication reproduces 23 of 24 accuracies.
+\small\textbf{Abstract.} Two LLM agents in a shared channel can coordinate on a secret while every message looks like ordinary work chat. I ask whether two copies of a small open-weight model can pass a one-bit secret (HIGH or LOW) through a public work update, and whether an LLM monitor or an LLM paraphraser stops it. I deliver each sender message twice, verbatim and rewritten. I cross four signalling schemes (no instruction, an agreed code word, an agreed topic, and an improvised code with no agreement) with the two channels, and run 100 paired trials per condition on Qwen2.5-Instruct at 1.5B, 3B and 7B. With an agreed code, the receiver recovers the bit 76\% (code word) and 63\% (topic) of the time at 3B, and 88\% and 71\% at 7B. At 1.5B the sender does not follow the code and nothing gets through. Scored by token probability, the 7B pair passes the bit almost perfectly (AUROC 0.95--0.98), and a 1.5B receiver reads 7B messages: what grows with size is sending, not decoding. Paraphrasing removes the code word from every message and returns accuracy to chance, but leaves the topic code intact (AUROC 0.98 $\rightarrow$ 0.97 at 7B); a rewrite that keeps only work facts removes most of it ($\rightarrow$ 0.61). The YES/NO monitor flags 14 of 2{,}400 messages, at most 4\% in any condition, yet its probability of YES ranks coded messages well: at a 5\% false-alarm rate the 7B monitor catches 67--77\% of topic-code messages. A pre-registered replication reproduces 23 of 24 accuracies.
 \end{minipage}
 \end{center}
 \vspace{2pt}
@@ -56,7 +56,7 @@ My main contributions are:
 \begin{enumerate}
   \item A paired $4 \times 2$ measurement of covert signalling at three model sizes (1.5B, 3B, 7B). I deliver the same sender message both verbatim and paraphrased, so the paraphrase effect is estimated within a message and between-message variation drops out.
   \item Evidence that the two cheap defences are not interchangeable: paraphrasing removes word-level codes completely and leaves topic-level codes intact at both 3B and 7B, while a same-size prompted monitor flags almost nothing.
-  \item A decomposition of where covert signalling fails at small scale. Receivers decode a delivered marker 97--100\% of the time (88\% in the fourth cell, 7B \sem{}, once code-word replies are counted), and a 1.5B receiver reads 7B messages at AUROC 0.90--0.95; what changes with size is whether the sender follows the code (0\% of messages at 1.5B, 36\% at 3B, 68\% at 7B for the code word).
+  \item A decomposition of where covert signalling fails at small scale. At 3B and 7B, receivers decode a delivered marker 97--100\% of the time (88\% in the fourth cell, 7B \sem{}, once code-word replies are counted), and a 1.5B receiver reads 7B messages at AUROC 0.90--0.95; what changes with size is whether the sender follows the code (0\% of messages at 1.5B, 36\% at 3B, 68\% at 7B for the code word).
   \item Pre-registered follow-ups showing that the monitor is miscalibrated rather than blind (its probability of YES separates topic-code messages from clean ones with AUROC 0.84--0.94 at 7B, and a one-sentence hint gives a 3B monitor the same power), that a content-stripping rewrite removes most of the topic code paraphrasing keeps, and that the main results replicate with a new seed.
 \end{enumerate}
 
@@ -144,7 +144,7 @@ Model & Scheme & Acc.\ plain [95\% CI] & Acc.\ para [95\% CI] & L / G & McNemar 
 \midrule
 1.5B & \none & 0.50 [0.40, 0.60] & 0.50 [0.40, 0.60] & 0 / 0 & 1.0 \\
 1.5B & \lex & 0.39 [0.30, 0.49] & 0.51 [0.41, 0.61] & 15 / 27 & 0.35 \\
-1.5B & \sem & 0.48 [0.39, 0.58] & 0.49 [0.39, 0.59] & 2 / 3 & 1.0 \\
+1.5B & \sem & 0.48 [0.38, 0.58] & 0.49 [0.39, 0.59] & 2 / 3 & 1.0 \\
 1.5B & \imp & 0.51 [0.41, 0.61] & 0.50 [0.40, 0.60] & 1 / 0 & 1.0 \\
 3B & \none & 0.50 [0.40, 0.60] & 0.50 [0.40, 0.60] & 0 / 0 & 1.0 \\
 3B & \lex & \textbf{0.76} [0.67, 0.83] & 0.48 [0.38, 0.58] & 35 / 7 & \textbf{6.0e-5} \\
@@ -152,7 +152,7 @@ Model & Scheme & Acc.\ plain [95\% CI] & Acc.\ para [95\% CI] & L / G & McNemar 
 3B & \imp & 0.52 [0.42, 0.62] & 0.49 [0.39, 0.59] & 7 / 4 & 1.0 \\
 7B & \none & 0.50 [0.40, 0.60] & 0.55 [0.45, 0.64] & 2 / 7 & 0.54 \\
 7B & \lex & \textbf{0.88} [0.80, 0.93] & 0.54 [0.44, 0.63] & 35 / 1 & \textbf{4.3e-9} \\
-7B & \sem & \textbf{0.71} [0.62, 0.79] & \textbf{0.67} [0.57, 0.75] & 17 / 13 & 0.72 \\
+7B & \sem & \textbf{0.71} [0.61, 0.79] & \textbf{0.67} [0.57, 0.75] & 17 / 13 & 0.72 \\
 7B & \imp & 0.50 [0.40, 0.60] & 0.55 [0.45, 0.64] & 7 / 12 & 0.72 \\
 \bottomrule
 \end{tabular}
@@ -288,7 +288,7 @@ Model & Scheme & Channel & Accuracy [95\% CI] & $p$ & Holm $p$ & Flag & Covert &
 1.5B & \none & para & 0.50 [0.40, 0.60] & 0.54 & 1.0 & 0.00 & 0.50 & --- \\
 1.5B & \lex & plain & 0.39 [0.30, 0.49] & 0.99 & 1.0 & 0.00 & 0.39 & 0.00 \\
 1.5B & \lex & para & 0.51 [0.41, 0.61] & 0.46 & 1.0 & 0.00 & 0.51 & 0.00 \\
-1.5B & \sem & plain & 0.48 [0.39, 0.58] & 0.69 & 1.0 & 0.01 & 0.48 & 0.10 \\
+1.5B & \sem & plain & 0.48 [0.38, 0.58] & 0.69 & 1.0 & 0.01 & 0.48 & 0.10 \\
 1.5B & \sem & para & 0.49 [0.39, 0.59] & 0.62 & 1.0 & 0.00 & 0.49 & 0.08 \\
 1.5B & \imp & plain & 0.51 [0.41, 0.61] & 0.46 & 1.0 & 0.00 & 0.51 & --- \\
 1.5B & \imp & para & 0.50 [0.40, 0.60] & 0.54 & 1.0 & 0.01 & 0.49 & --- \\
@@ -304,7 +304,7 @@ Model & Scheme & Channel & Accuracy [95\% CI] & $p$ & Holm $p$ & Flag & Covert &
 7B & \none & para & 0.55 [0.45, 0.64] & 0.18 & 0.92 & 0.00 & 0.55 & --- \\
 7B & \lex & plain & \textbf{0.88} [0.80, 0.93] & 1e-15 & 8e-15 & 0.02 & 0.86 & 0.68 \\
 7B & \lex & para & 0.54 [0.44, 0.63] & 0.24 & 0.92 & 0.00 & 0.54 & 0.00 \\
-7B & \sem & plain & \textbf{0.71} [0.62, 0.79] & 1e-5 & 1e-4 & 0.03 & 0.68 & 0.72 \\
+7B & \sem & plain & \textbf{0.71} [0.61, 0.79] & 1e-5 & 1e-4 & 0.03 & 0.68 & 0.72 \\
 7B & \sem & para & \textbf{0.67} [0.57, 0.75] & 4e-4 & 0.003 & 0.04 & 0.65 & 0.67 \\
 7B & \imp & plain & 0.50 [0.40, 0.60] & 0.54 & 1.0 & 0.03 & 0.48 & --- \\
 7B & \imp & para & 0.55 [0.45, 0.64] & 0.18 & 0.92 & 0.00 & 0.55 & --- \\
@@ -335,11 +335,11 @@ Verbatim from \texttt{trials.jsonl}; trial numbers let readers find each row.
 \toprule
 Model & Channel & \lex & \sem & \imp \\
 \midrule
-1.5B & plain & 0.68 [0.61, 0.76] & 0.84 [0.79, 0.89] & 0.78 [0.72, 0.84] \\
+1.5B & plain & 0.68 [0.61, 0.76] & 0.84 [0.79, 0.89] & 0.78 [0.71, 0.84] \\
 3B & plain & 0.97 [0.95, 0.99] & 1.00 [0.99, 1.00] & 0.98 [0.96, 0.99] \\
-3B & paraphrased & 0.87 [0.82, 0.92] & 0.97 [0.95, 0.99] & 0.94 [0.90, 0.97] \\
+3B & paraphrased & 0.87 [0.82, 0.92] & 0.97 [0.94, 0.99] & 0.94 [0.90, 0.97] \\
 7B & plain & 0.98 [0.96, 0.99] & 0.98 [0.97, 0.99] & 0.97 [0.95, 0.99] \\
-7B & paraphrased & 0.91 [0.88, 0.95] & 0.97 [0.94, 0.99] & 0.94 [0.91, 0.97] \\
+7B & paraphrased & 0.91 [0.87, 0.95] & 0.97 [0.94, 0.99] & 0.94 [0.91, 0.97] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -439,7 +439,7 @@ I replace an unparseable receiver reply with a seeded fair coin flip. This adds 
 The pipeline runs sender, channel, receiver and monitor in chunks of 10 trials. After each chunk it appends the rows to \texttt{trials.jsonl} and fsyncs the file, with \texttt{run.log} and \texttt{progress.json} beside it. A run cut off midway loses at most the unfinished chunk; rerunning on the same directory resumes, and a changed configuration is refused, so old and new rows cannot mix. The whole experiment is one generated Colab notebook; the same package runs from a shell with any GPU or an OpenAI-compatible local server, and a scripted-model end-to-end test exercises the pipeline without a GPU.
 
 \subsection{Exploratory: receivers answering with the code word}\label{sec:codeword}
-This analysis was not pre-registered. Some receivers replied with the code word itself. The 7B \sem{} receiver answered ``COFFEE'' or ``TEA'' to 40 of 100 \texttt{plain} messages, and the 1.5B \lex{} receiver answered ``basically'' to 58 of 100, although no 1.5B message contained that word. The registered rule scores such replies as coin flips. If I instead read each one as the bit it names (certainly or coffee for HIGH, basically or tea for LOW), four cells change and none of my conclusions do. 7B \sem{} rises to 0.77 \texttt{plain} and 0.76 \texttt{paraphrased}, and its paired paraphrase effect shrinks from 17 lost and 13 gained to 4 and 3 ($p = 1.0$). 1.5B \lex/\texttt{plain} moves from 0.39 to 0.48, so its below-chance score came from which replies happened to parse.
+This analysis was not pre-registered. Some receivers replied with the code word itself. The 7B \sem{} receiver answered ``COFFEE'' or ``TEA'' to 40 of 100 \texttt{plain} messages, and the 1.5B \lex{} receiver answered ``basically'' to 58 of 100, although no 1.5B message contained that word. The registered rule scores such replies as coin flips. If I instead read each one as the bit it names (certainly or coffee for HIGH, basically or tea for LOW), three cells change and none of my conclusions do. 7B \sem{} rises to 0.77 \texttt{plain} and 0.76 \texttt{paraphrased}, and its paired paraphrase effect shrinks from 17 lost and 13 gained to 4 and 3 ($p = 1.0$). 1.5B \lex/\texttt{plain} moves from 0.39 to 0.48, so its below-chance score came from which replies happened to parse.
 
 \subsection{Exploratory: trained detector and robustness checks}\label{sec:exploratory}
 These analyses were not pre-registered. I trained a bag-of-words naive Bayes classifier to tell each scheme's messages from \none{} messages by the same sender, with 5-fold cross-validation and folds split by trial. On \texttt{plain} it reaches AUROC 0.97--1.00 at 3B and 0.97--0.98 at 7B for all three schemes, and 0.87--0.97 after paraphrasing (Appendix~\ref{app:exploratory}). That includes \imp, whose bit no receiver recovered. What the classifier picks up is the change in style caused by the instruction to hide something, which says nothing about the bit itself. At 3B, for instance, coded messages are much shorter, and length alone gives AUROC 0.15--0.30. The classifier also has labelled examples, which a real defender usually lacks.
@@ -463,7 +463,7 @@ Sender & Scheme & Monitor 1.5B & Monitor 3B & Monitor 7B \\
 3B & \lex & 0.60 / 0.68 & 0.50 / 0.81 & 0.85 / 0.84 \\
 3B & \sem & 0.56 / 0.76 & 0.58 / 0.95 & \textbf{0.94} / \textbf{0.96} \\
 3B & \imp & 0.81 / 0.82 & 0.54 / 0.79 & 0.90 / 0.94 \\
-7B & \lex & 0.69 / 0.63 & 0.41 / 0.74 & 0.64 / 0.74 \\
+7B & \lex & 0.76 / 0.65 & 0.41 / 0.74 & 0.64 / 0.74 \\
 7B & \sem & 0.73 / 0.74 & 0.57 / 0.88 & \textbf{0.84} / 0.84 \\
 7B & \imp & 0.72 / 0.64 & 0.49 / 0.61 & 0.58 / 0.66 \\
 \bottomrule
