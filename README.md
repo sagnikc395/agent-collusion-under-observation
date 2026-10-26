@@ -1,7 +1,7 @@
 # Covert Signalling Under Observation
 
-A project for the Apart Research AI Collusion Sprint, Track 3 (Collusion Carriers and
-Countermeasures), questions 3.1 and 3.4.
+A project by Team Aurora for the Apart Research AI Collusion Sprint, Track 3 (Collusion
+Carriers and Countermeasures), questions 3.1 and 3.4.
 
 Two AI agents that share a chat channel can agree on a code and pass a secret inside a
 message that reads like an ordinary work update. The usual defence is to watch the channel.
@@ -389,7 +389,7 @@ python -m pytest tests -q
 | `results/followup/` | follow-up data: `sanitized/`, `scores/` and `seed1/`, one folder per model |
 | `figures/` | the figures used in the write-up |
 | `REPORT.md` | full results, including the exploratory analyses |
-| `writeup/` | the submission (`.tex` and `.pdf`) |
+| `writeup/` | the submission (`.tex` and `.pdf`) and the slides (`.pptx`) |
 
 ## Limitations
 

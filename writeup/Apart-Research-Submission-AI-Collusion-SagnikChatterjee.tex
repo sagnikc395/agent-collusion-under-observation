@@ -25,6 +25,7 @@
 \begin{center}
 {\LARGE\bfseries Covert Signalling Under Observation}\\[6pt]
 {\large Can a monitor or a paraphraser stop two small LLMs from passing a secret through ordinary work chat?}\\[12pt]
+{\large\bfseries Team Aurora}\\[4pt]
 {\large Sagnik Chatterjee}\\[2pt]
 \texttt{sagnikchatterjee607@gmail.com}\\[2pt]
 Independent Affiliation\\[4pt]
@@ -360,7 +361,7 @@ Of my twelve pre-registered expectations, seven (2--4, 6, 8, 10, 11) were suppor
 
 \subsection*{Code and Data}
 \begin{itemize}[nosep,leftmargin=*]
-  \item Code repository: \url{https://github.com/sagnikc395/agent-collusion-under-observation}
+  \item Code repository: \url{https://github.com/sagnikc395/covert-signalling-under-observation}
   \item Data: \texttt{results/} directories for each model in the repository (Qwen2.5-1.5B-Instruct, Qwen2.5-3B-Instruct, Qwen2.5-7B-Instruct-AWQ). Each holds \texttt{trials.jsonl} (one row per condition, with the sender message, the delivered message, both raw model replies and the parsed labels), \texttt{config.json} and \texttt{run.log}.
   \item Artifact: \texttt{notebooks/covert\_signal.ipynb}, the generated Colab notebook that runs the experiment end to end. The notebook needs no Hugging Face or GitHub token.
   \item Follow-up data: \texttt{results/followup/} (\texttt{sanitized/}, \texttt{scores/} and \texttt{seed1/}, one folder per model), produced by \texttt{covert/followup.py}.
@@ -368,7 +369,7 @@ Of my twelve pre-registered expectations, seven (2--4, 6, 8, 10, 11) were suppor
 \end{itemize}
 
 \subsection*{Author Contributions}
-S.C.\ designed the study, wrote the pre-registered expectations before any model run, implemented the pipeline, ran all experiments, and wrote the final report.
+Team Aurora: S.C.\ designed the study, wrote the pre-registered expectations before any model run, implemented the pipeline, ran all experiments, and wrote the final report.
 
 \begin{thebibliography}{9}
 \bibitem{motwani2024} Motwani, S.\,R., Baranchuk, M., Strohmeier, M., Bolina, V., Torr, P.\,H.\,S., Hammond, L., and Schroeder de Witt, C. (2024). Secret Collusion among AI Agents: Multi-Agent Deception via Steganography. \emph{Advances in Neural Information Processing Systems 37 (NeurIPS 2024)}. arXiv:2402.07510.
