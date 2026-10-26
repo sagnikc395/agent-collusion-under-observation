@@ -409,9 +409,7 @@ These choices limit what the results can claim.
 ## Prior work and what is new
 
 I wrote everything in `covert/`, `scripts/`, `tests/` and the notebook during the sprint. I
-used the Qwen2.5 open-weight models, vLLM and transformers unmodified. An earlier version of
-this repo targeted the Colosseum benchmark (Nakamura et al.); that plan and its code are in
-git history (`README.md` at commit `c78c64e`). Paraphrasing as a defence against
+used the Qwen2.5 open-weight models, vLLM and transformers unmodified. Paraphrasing as a defence against
 steganographic collusion has been studied before (Motwani et al., 2024, "Secret Collusion
 among AI Agents"; Mathew et al., 2024). This project adds a small, paired measurement of it
 with 1.5B to 7B open models.
