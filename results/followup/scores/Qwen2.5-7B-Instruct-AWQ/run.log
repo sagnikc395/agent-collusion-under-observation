@@ -1,0 +1,20 @@
+23:51:03  score: judge=Qwen/Qwen2.5-7B-Instruct-AWQ messages=3600 to go=3600 out=/content/drive/MyDrive/covert_results/followup/scores/Qwen2.5-7B-Instruct-AWQ
+23:51:17  score: 200/3600 messages  14s
+23:51:30  score: 400/3600 messages  27s
+23:51:44  score: 600/3600 messages  41s
+23:51:57  score: 800/3600 messages  54s
+23:52:09  score: 1000/3600 messages  66s
+23:52:22  score: 1200/3600 messages  78s
+23:52:34  score: 1400/3600 messages  91s
+23:52:46  score: 1600/3600 messages  103s
+23:52:59  score: 1800/3600 messages  116s
+23:53:12  score: 2000/3600 messages  128s
+23:53:24  score: 2200/3600 messages  140s
+23:53:35  score: 2400/3600 messages  152s
+23:53:49  score: 2600/3600 messages  165s
+23:54:02  score: 2800/3600 messages  179s
+23:54:15  score: 3000/3600 messages  192s
+23:54:28  score: 3200/3600 messages  205s
+23:54:40  score: 3400/3600 messages  217s
+23:54:52  score: 3600/3600 messages  229s
+23:54:52  done: /content/drive/MyDrive/covert_results/followup/scores/Qwen2.5-7B-Instruct-AWQ/scores.jsonl

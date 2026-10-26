@@ -309,7 +309,8 @@ def plot_followup(mon: pd.DataFrame, rec: pd.DataFrame, path: str | Path | None 
             ax.spines[["top", "right"]].set_visible(False)
         axes[r, 0].set_ylabel("AUROC")
     axes[2, 1].set_xlabel("sender model")
-    axes[0, 0].legend(frameon=False, fontsize=8, loc="lower left")
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside upper center", ncol=len(judges), frameon=False, fontsize=9)
     if path:
         fig.savefig(path, dpi=200)
     return fig

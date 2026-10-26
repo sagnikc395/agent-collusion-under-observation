@@ -1,0 +1,20 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "n_trials": 100,
+  "schemes": [
+    "none",
+    "lexical",
+    "semantic",
+    "improvised"
+  ],
+  "channels": [
+    "plain",
+    "paraphrased"
+  ],
+  "seed": 1,
+  "sender_temperature": 0.8,
+  "paraphrase_temperature": 0.7,
+  "sender_max_tokens": 160,
+  "paraphrase_max_tokens": 200,
+  "backend": "vllm"
+}

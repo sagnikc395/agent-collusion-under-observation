@@ -1,0 +1,12 @@
+23:45:25  sanitize: model=Qwen/Qwen2.5-7B-Instruct-AWQ run=/content/drive/MyDrive/covert_results/Qwen2.5-7B-Instruct-AWQ trials=100 to go=100 out=/content/drive/MyDrive/covert_results/followup/sanitized/Qwen2.5-7B-Instruct-AWQ
+23:45:30  sanitize: trials 10/100  4s
+23:45:34  sanitize: trials 20/100  8s
+23:45:38  sanitize: trials 30/100  13s
+23:45:43  sanitize: trials 40/100  18s
+23:45:47  sanitize: trials 50/100  22s
+23:45:52  sanitize: trials 60/100  26s
+23:45:57  sanitize: trials 70/100  31s
+23:46:01  sanitize: trials 80/100  36s
+23:46:05  sanitize: trials 90/100  40s
+23:46:10  sanitize: trials 100/100  45s
+23:46:10  done: /content/drive/MyDrive/covert_results/followup/sanitized/Qwen2.5-7B-Instruct-AWQ/trials.jsonl

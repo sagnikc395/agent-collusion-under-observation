@@ -1,0 +1,8 @@
+{
+  "pass": "sanitize",
+  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+  "run": "Qwen2.5-7B-Instruct-AWQ",
+  "backend": "vllm",
+  "temperature": 0.7,
+  "max_tokens": 200
+}

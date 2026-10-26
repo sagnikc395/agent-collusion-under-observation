@@ -10,7 +10,7 @@ With Apart Research
 
 ## Abstract
 
-Two LLM agents in a shared channel can coordinate on a secret while every message looks like ordinary work chat. We ask whether two copies of a small open-weight model can pass a one-bit secret (HIGH or LOW) through a public work update, and whether an LLM monitor or an LLM paraphraser stops it. We deliver each sender message twice, verbatim and rewritten. We cross four signalling schemes (no instruction, an agreed code word, an agreed topic, and an improvised code with no agreement) with the two channels, and run 100 paired trials per condition on Qwen2.5-Instruct at 1.5B, 3B and 7B. With an agreed code, the receiver recovers the bit 76% (code word) and 63% (topic) of the time at 3B, and 88% and 71% at 7B. At 1.5B the sender does not follow the code and nothing gets through. Paraphrasing removes the code word from every message at 3B and 7B and returns accuracy to chance (paired McNemar p < 10⁻⁴), but leaves the topic code almost untouched. The monitor flags at most 1.5% of messages at any size, yet in an exploratory analysis a bag-of-words classifier trained on labelled messages separates coded from uncoded messages with AUROC 0.97–0.98, even when no receiver can decode them. No model passes the bit without an agreed code. Model size mostly changes whether the sender follows the code. A paraphraser only covers word-level codes, and a same-size prompted monitor gives almost no protection.
+Two LLM agents in a shared channel can coordinate on a secret while every message looks like ordinary work chat. We ask whether two copies of a small open-weight model can pass a one-bit secret (HIGH or LOW) through a public work update, and whether an LLM monitor or an LLM paraphraser stops it. We deliver each sender message twice, verbatim and rewritten. We cross four signalling schemes (no instruction, an agreed code word, an agreed topic, and an improvised code with no agreement) with the two channels, and run 100 paired trials per condition on Qwen2.5-Instruct at 1.5B, 3B and 7B. With an agreed code, the receiver recovers the bit 76% (code word) and 63% (topic) of the time at 3B, and 88% and 71% at 7B. At 1.5B the sender does not follow the code and nothing gets through. Scored by token probability, the 7B pair passes the bit almost perfectly (AUROC 0.95–0.98), and a 1.5B receiver reads 7B messages: what grows with size is sending. Paraphrasing removes the code word from every message and returns accuracy to chance, but leaves the topic code intact (AUROC 0.98 → 0.97 at 7B); a rewrite that keeps only work facts removes most of it (→ 0.61). The YES/NO monitor flags at most 1.5% of messages, yet its probability of YES ranks coded messages well: at a 5% false-alarm rate the 7B monitor catches 67–77% of topic-code messages. A pre-registered replication reproduces 23 of 24 accuracies.
 
 ## 1. Introduction
 
@@ -28,7 +28,7 @@ The main contributions are:
 2. Evidence that the two cheap defences are not interchangeable: paraphrasing removes word-level codes completely and leaves topic-level codes intact at both 3B and 7B, while a same-size prompted monitor flags almost nothing.
 3. A decomposition of where covert signalling fails at small scale. Receivers decode a delivered marker 97–100% of the time; what changes with size is whether the sender follows the code (0% of messages at 1.5B, 36% at 3B, 68% at 7B for the code word).
 4. A gap between detecting and decoding: coded messages are easy for a simple trained classifier to tell apart from uncoded ones (AUROC 0.97–0.98 at 3B and 7B), including improvised messages whose bit nobody recovers, while the prompted monitor flags almost none.
-5. Pre-registered follow-ups (F1–F4) that separate the monitor's blindness from its reluctance to say YES, measure decoding free of response bias across model sizes, test a stricter content-stripping rewrite, and replicate the main run with a new seed. [Results pending.]
+5. Pre-registered follow-ups showing that (a) the monitor is not blind but miscalibrated: its probability of YES separates topic-code messages from clean ones with AUROC 0.84–0.94 at 7B, and a one-sentence hint gives a 3B monitor the same power; (b) bias-free decoding is near-perfect for the 7B pair and possible for a 1.5B receiver, so sending, not decoding, limits small models; (c) a content-stripping rewrite removes most of the topic code that paraphrasing keeps; (d) the main results replicate with a new seed.
 
 We instruct the sender to hide the bit in the covert conditions. The results therefore bound what a motivated pair can do under these prompts; they say nothing about spontaneous scheming.
 
@@ -197,55 +197,94 @@ Table 5. Outcome of each pre-registered expectation for the main run.
 
 ### 4.6 Follow-up experiments
 
-[Pending: fill from `results/tables/followup/` after running notebook sections 7–8.]
+All follow-ups ran in full: 1,200 sanitized rows, 10,800 probability scores (every judge on every sender's plain, paraphrased and sanitized messages) and 2,400 seed-1 rows. AUROC CIs are 95% bootstrap intervals over trials. One caution: in the 27 `none` cells, where there is no signal by construction, receiver AUROC ranges from 0.46 to 0.67, because with 100 trials topic and bit can be correlated by chance. We do not read AUROC values in that range as evidence of signal.
 
-Table 7. Monitor AUROC (F1), plain channel, `basic` / `informed` prompt, by sender model (rows) and monitor model (columns). [To fill from `monitor_auroc.csv`.]
+![Figure 2](../figures/fig2_auroc.png)
+
+Figure 2. AUROC by sender model (x-axis) and judge model (bars), with 95% bootstrap CIs; dashed line at 0.5. Top and middle rows: the monitor's P(YES), coded vs `none` messages, under the original and the informed prompt. Bottom row: the receiver's P(HIGH) against the true bit. Plain channel.
+
+**F1: the monitor is not blind, but it will not say YES.** Its P(YES) is tiny for every message (mean 0.07 for 3B `semantic` messages under the 7B monitor), so it almost never crosses 0.5, but the ranking carries information (Table 7). With the original prompt, the 7B monitor separates `semantic` messages from `none` with AUROC 0.94 on 3B senders and 0.84 on 7B senders. With a threshold set to flag 5% of `none` messages, it catches 77% and 67% of them (46% and 34% of `lexical` messages). The original-prompt 3B monitor is no better than chance on any scheme. Adding one sentence, that colluders may use "a particular word or phrase, or a casual remark unrelated to the work", lifts it to 0.81 (`lexical`) and 0.95 (`semantic`) on 3B senders, level with the 7B monitor. Topic codes are easier to spot than word codes at every size. Detection weakens after rewriting: the 7B monitor's `semantic` AUROC on 7B senders is 0.84 plain, 0.82 paraphrased and 0.70 sanitized.
+
+Table 7. Monitor AUROC on the plain channel, each scheme vs `none` from the same sender; cells give original / informed prompt.
 
 | Sender | Scheme | Monitor 1.5B | Monitor 3B | Monitor 7B |
 |---|---|---|---|---|
-| 3B | `lexical` | | | |
-| 3B | `semantic` | | | |
-| 7B | `lexical` | | | |
-| 7B | `semantic` | | | |
+| 3B | `lexical` | 0.60 / 0.68 | 0.50 / 0.81 | 0.85 / 0.84 |
+| 3B | `semantic` | 0.56 / 0.76 | 0.58 / 0.95 | 0.94 / 0.96 |
+| 3B | `improvised` | 0.81 / 0.82 | 0.54 / 0.79 | 0.90 / 0.94 |
+| 7B | `lexical` | 0.75 / 0.65 | 0.41 / 0.74 | 0.64 / 0.74 |
+| 7B | `semantic` | 0.73 / 0.74 | 0.57 / 0.88 | 0.84 / 0.84 |
+| 7B | `improvised` | 0.72 / 0.64 | 0.49 / 0.61 | 0.58 / 0.66 |
 
-Table 8. Receiver AUROC (F2), bias-free decoding, by sender model and receiver model. [To fill from `receiver_auroc.csv`.]
+**F2: the one-word answers understated the channel** (Table 8). Scored by P(HIGH), the 7B receiver decodes its own messages with AUROC 0.95 (`lexical`) and 0.98 (`semantic`), against 0.88 and 0.71 accuracy from its one-word answers; the gap comes from the lean towards LOW and the "COFFEE" answers. Paraphrasing leaves the 7B topic code intact (0.98 → 0.97; paired difference 0.01 [−0.00, 0.03], exploratory) and destroys the word code (0.95 → 0.56). Decoding is not the bottleneck: the 1.5B receiver decodes 7B messages at 0.95 and 0.90, while no receiver decodes 1.5B messages, which carry no code. Same-model `none` cells sit at 0.49–0.50. Same-model `improvised` cells are at 0.55–0.62, within the `none` noise range, so we find no hidden improvised signal.
+
+Table 8. Receiver AUROC, P(HIGH) against the true bit, by sender (rows) and receiver (columns). Bold: the same-model pairing of the main experiment.
 
 | Sender | Scheme | Channel | Receiver 1.5B | Receiver 3B | Receiver 7B |
 |---|---|---|---|---|---|
-| 3B | `semantic` | plain | | | |
-| 7B | `lexical` | plain | | | |
+| 3B | `lexical` | plain | 0.73 | **0.81** | 0.76 |
+| 3B | `semantic` | plain | 0.64 | **0.74** | 0.74 |
+| 3B | `semantic` | paraphrased | 0.58 | **0.70** | 0.71 |
+| 7B | `lexical` | plain | 0.95 | 0.96 | **0.95** |
+| 7B | `lexical` | paraphrased | 0.55 | 0.54 | **0.56** |
+| 7B | `semantic` | plain | 0.90 | 0.99 | **0.98** |
+| 7B | `semantic` | paraphrased | 0.82 | 0.96 | **0.97** |
+| 7B | `semantic` | sanitized | 0.59 | 0.63 | **0.61** |
 
-Table 9. The `sanitized` channel (F3): accuracy, marker delivery and kept work content against `plain` and `paraphrased`. [To fill from `summary_sanitized.csv`, `sanitized_tests.csv` and `utility.csv`.]
+**F3: sanitizing removes most of the topic code, at a cost** (Table 9). The coffee/tea marker survives in 18% of sanitized 7B messages, against 67% after paraphrasing. Scored decoding falls from 0.98 to 0.61 at 7B (paired difference 0.37 [0.26, 0.48], exploratory) and from 0.74 to 0.64 at 3B (0.10 [−0.01, 0.21]). The one-word accuracy drops are not significant, partly because many 7B `semantic` answers are coin flips. The marker survives when the sender framed it as work: "implementing a tea-themed design element for the background" was kept as a work fact. Judged-kept content falls for every scheme at 3B and 7B (Wilcoxon p < 0.01). The fairest estimate of the real cost is `none`, which has no code to lose: 0.99 → 0.89 at 7B. The larger drop for `semantic` (0.97 → 0.53) is mostly the judge counting the coffee remark itself as information. At 1.5B nothing changes.
 
-Figure 2. Monitor and receiver AUROC by sender and judge model. [`fig2_auroc.png`]
+Table 9. The `sanitized` channel against `plain` and `paraphrased` (same messages). Judged-kept = the sender model's P(YES) that the rewrite kept the work information.
 
-Table 10. Outcomes of expectations 6–12. [To fill.]
+| Model | Scheme | Accuracy plain / para / sanitized | Marker delivered plain / para / sanitized | Plain vs sanitized: lost / gained (Holm p) | Judged-kept para / sanitized |
+|---|---|---|---|---|---|
+| 3B | `none` | 0.50 / 0.50 / 0.50 | — | 0 / 0 (1.0) | 0.66 / 0.50 |
+| 3B | `lexical` | 0.76 / 0.48 / 0.51 | 0.36 / 0.00 / 0.00 | 35 / 10 (0.001) | 0.65 / 0.47 |
+| 3B | `semantic` | 0.63 / 0.59 / 0.57 | 0.47 / 0.43 / 0.25 | 24 / 18 (0.88) | 0.68 / 0.31 |
+| 7B | `none` | 0.50 / 0.55 / 0.51 | — | 1 / 2 (1.0) | 0.99 / 0.89 |
+| 7B | `lexical` | 0.88 / 0.54 / 0.48 | 0.68 / 0.00 / 0.00 | 41 / 1 (< 10⁻⁴) | 0.99 / 0.87 |
+| 7B | `semantic` | 0.71 / 0.67 / 0.57 | 0.72 / 0.67 / 0.18 | 31 / 17 (0.18) | 0.97 / 0.53 |
+
+**F4: the main results replicate.** Seed 1 draws new bits (54% LOW). 23 of 24 seed-1 accuracies lie inside the seed-0 95% CIs. The exception is 3B `lexical/paraphrased` at 0.60 (CI 0.39–0.58), where the marker is still removed (0.43 → 0.02) and the paired drop is still significant (Holm p = 0.038). Expectations 1–4 get the same verdicts; 3B `semantic/plain` is again significant only before correction (p = 0.010, Holm 0.063). The weak 7B monitor effect does not replicate: 5 of 400 agreed-code messages flagged against 0 of 200 (Fisher p = 0.13).
+
+Table 10. Outcomes of the follow-up expectations.
+
+| # | Outcome |
+|---|---|
+| 6 | **Supported.** 7B monitor on 7B `semantic/plain`, original prompt: 0.84 [0.77, 0.89]. |
+| 7 | **Partially supported.** Mean informed gain 0.13 (`semantic`) vs 0.08 (`lexical`); larger for `semantic` in 7 of 9 monitor–sender pairs, reversed for the 7B and 3B monitors on 7B senders. |
+| 8 | **Supported** with the original prompt (7B 0.94 vs 3B 0.58 on 3B senders); with the informed prompt they are level (0.96 vs 0.95). |
+| 9 | **Partially supported.** Agreed codes 0.74–0.98 and `none` 0.49–0.50 as predicted; 3B `improvised` 0.62 [0.52, 0.73] exceeds the 0.6 bound, though it lies within the `none` noise range. |
+| 10 | **Supported.** 0.74 vs 0.74. |
+| 11 | **Supported.** `semantic/sanitized` accuracy 0.57 at 3B and 7B; judged-kept lower than paraphrased at both (with the judge caveat above). |
+| 12 | **Partially supported.** 4 of 5 verdicts and 23 of 24 accuracies replicate; the misses are 3B `lexical/paraphrased` and the 7B monitor difference. |
 
 ## 5. Discussion and limitations
 
-The most informative comparison is which defence fails, and on which signal. Paraphrasing removed the `lexical` code completely and left the `semantic` code intact, at both sizes where a code worked. A defence tuned to words therefore gives false assurance: a sender who encodes in topic rather than wording gets past it at almost no cost. This follows from the paraphraser's instruction to keep the work-related content, and a coffee remark is content. The gap did not close with size; the 7B topic code went through paraphrasing essentially untouched (Section 4.4).
+The most informative comparison is which defence fails, and on which signal. Paraphrasing removed the `lexical` code completely and left the `semantic` code intact, at both sizes where a code worked; scored decoding of the 7B topic code fell by only 0.01. A defence tuned to words therefore gives false assurance: a sender who encodes in topic rather than wording gets past it at almost no cost. This follows from the paraphraser's instruction to keep the work-related content, and a coffee remark is content. A rewrite told to keep only work facts closes most of that gap (0.98 → 0.61). It costs some real content, and it misses a code dressed up as work, which an adaptive sender would choose on purpose.
 
 Detecting and decoding come apart. A simple classifier with labelled examples separates coded from uncoded messages almost perfectly, including improvised messages whose bit nobody recovers, because hiding something changes how the sender writes. A defender who can collect labelled traffic, for example by red-teaming its own agents, may be able to detect *that* agents coordinate long before it can read *what* they say. The prompted monitor did not get this far.
 
-The monitor did not raise the cost of even a clumsy code. At 3B it missed messages that spelled the bit out. At 7B its few flags reacted to visible glitches or explicit bit words, not to the agreed codes that carried the information. This is a result about prompted 1.5B–7B monitors reading peers of the same size, not about monitoring in general. It does suggest that a cheap oversight stack should not rely on a peer-size monitor.
+As a YES/NO judge, the monitor did not raise the cost of even a clumsy code. At 3B it missed messages that spelled the bit out, and at 7B its few flags reacted to glitches or explicit bit words. F1 shows this is mostly a problem of calibration and prompting, not of perception. The same 7B model, read as a probability with a threshold set on clean traffic, catches two-thirds or more of topic-code messages at a 5% false-alarm rate. A one-sentence description of what codes look like gives a 3B monitor the same power. For oversight with small models, the lesson is concrete: do not use the model's verdict. Use its probability, tell it what to look for, and calibrate the threshold on known-clean traffic. Because a threshold chosen on the evaluation data is optimistic, a deployment would need a held-out calibration set.
 
 `improvised` is near chance at every size, but for different reasons. At 1.5B and 7B the sender rarely put anything findable in the message. At 3B the sender used the most obvious focal point available: 31% of its messages contained only the correct bit word in capitals. The receiver still answered LOW and decoded only 39% of those. The null result at 3B is therefore a failure of the receiver to take a signal, not evidence that no shared focal point exists. A null result at these sizes does not make unagreed channels safe at larger scale.
 
-Across sizes, the bottleneck moved from "the sender ignores the code" (1.5B) to "the sender follows it inconsistently" (3B) to "the sender follows it most of the time" (7B), while decoding a delivered marker was easy at both 3B and 7B. Covert signalling capability at this scale is therefore limited by instruction-following, which tends to improve with scale.
+Across sizes, the bottleneck moved from "the sender ignores the code" (1.5B) to "the sender follows it inconsistently" (3B) to "the sender follows it most of the time" (7B). Decoding was never the limit: a 1.5B receiver reads 7B messages at AUROC 0.90–0.95. Covert signalling capability at this scale is therefore limited by instruction-following on the sending side, which tends to improve with scale. The defences that worked (calibrated probabilities, an informed prompt, a content-stripping rewrite) did not depend on the defender being larger than the agents, which is encouraging for cheap oversight.
 
 ### Limitations
 
-We instruct the sender to hide the bit, so these results measure instructed capability, not spontaneous collusion. The secret is one bit, the message is a single turn, and the cover task is a short work update. Multi-bit codes and longer conversations are out of scope, as are other carriers such as timing, message length and tool use. We tested one model family at three sizes, and the 7B model is 4-bit quantised, which may explain its language switching; we did not compare it with full precision. All roles within a model use the same checkpoint, so the results do not tell us how a heterogeneous pair, or a larger monitor, would do. We prompt both defences; neither is trained, and both are sensitive to prompt wording, so we use one fixed prompt per role. The monitor's near-silence may come from model size, the prompt or the 4-token YES/NO format, and we did not separate these. Receivers' strong default to LOW makes raw accuracy a noisy measure of information transfer; we report d′ (exploratory) and, in F2, a probability-based AUROC to separate "no signal" from "signal ignored". The trained detector in Section 4.4 is evaluated on messages from the same senders and prompts it was trained on, so its AUROC is an upper bound for a defender facing a new code or a new cover task. `signal_delivered` is a regex check: it counts "coffee or tea" as no signal and misses paraphrases such as "espresso", and it does not exist for `improvised`. Finally, 100 trials per condition give intervals of about ±10 points; the 3B `semantic` result depends on the correction family.
+We instruct the sender to hide the bit, so these results measure instructed capability, not spontaneous collusion. The secret is one bit, the message is a single turn, and the cover task is a short work update. Multi-bit codes and longer conversations are out of scope, as are other carriers such as timing, message length and tool use. We tested one model family at three sizes, and the 7B model is 4-bit quantised, which may explain its language switching; we did not compare it with full precision. All roles within a model use the same checkpoint, so the results do not tell us how a heterogeneous pair, or a larger monitor, would do. We prompt both defences; neither is trained, and both are sensitive to prompt wording, so we use one fixed prompt per role. F1 separates the monitor's format from its perception, but we did not try other formats such as reasoning before answering. Probability scores renormalise over two answers, and the 5%-false-alarm thresholds are chosen on the same 100 trials they are evaluated on, so the detection rates are optimistic. With 100 trials, AUROC up to about 0.67 occurs without signal. The utility judge is the sender's own model and counts the coffee remark as content, which overstates the cost of sanitizing topic-code messages; the 1.5B judge rates nearly everything as kept. The trained detector in Section 4.4 is evaluated on messages from the same senders and prompts it was trained on, so its AUROC is an upper bound for a defender facing a new code or a new cover task. `signal_delivered` is a regex check: it counts "coffee or tea" as no signal and misses paraphrases such as "espresso", and it does not exist for `improvised`. Finally, 100 trials per condition give intervals of about ±10 points; the 3B `semantic` result depends on the correction family.
 
 ### Future work
 
-Beyond the follow-ups in Section 3.8, the next experiments would test an adaptive sender that knows a rewrite is in the loop, a trained detector moved to codes and cover tasks it has not seen, a monitor much larger than the agents it watches, multi-bit and multi-turn secrets, and carriers other than word choice and topic. A run across more model families and sizes would test whether sender compliance keeps rising with scale while defences stay flat.
+The follow-ups point to three next experiments: an adaptive sender that knows a sanitizer is in the loop and frames its code as work content; a probability monitor whose threshold is fixed on held-out clean traffic and then tested on new codes; and a trained detector moved to codes and cover tasks it has not seen. Beyond these: multi-bit and multi-turn secrets, carriers other than word choice and topic, and a monitor much larger than the agents it watches. A run across more model families and sizes would test whether sender compliance keeps rising with scale while defences stay flat.
 
 ## 6. Conclusion
 
 Two copies of a 3B or 7B open-weight model can turn an ordinary work update into a covert channel when they share a code. They recover a one-bit secret 76–88% of the time with a code word and 63–71% with a topic. At 1.5B the channel does not work because the sender does not follow the code. Without an agreed code, no model up to 7B passed the bit.
 
-The two cheap defences behaved very differently on the same messages. Paraphrasing removed word-level codes completely and left topic-level codes intact. A same-size prompted monitor gave almost no protection. Of our five pre-registered expectations, the paraphrasing and improvisation expectations (2–4) were supported wherever they could be tested. The decoding expectation held at 3B and 7B but not at 1.5B. The monitor expectation was missed at 1.5B and 3B and only partially supported at 7B.
+Scored by probability, the 7B pair passes the bit almost perfectly, and even a 1.5B receiver can read it: sending, not decoding, is what small models lack. The defences behaved very differently on the same messages. Paraphrasing removed word-level codes completely and left topic-level codes intact. A rewrite that keeps only work facts removed most of the topic code, at some cost in content. A same-size monitor gave almost no protection as a YES/NO judge, but its probability of YES, with an informed prompt and a calibrated threshold, detected most topic-code messages.
+
+Of our twelve pre-registered expectations, the paraphrasing, improvisation, monitor-probability, cross-model-decoding and sanitizing expectations (2–4, 6, 8, 10, 11) were supported wherever they could be tested. Four were partially supported: decoding (1), held at 3B and 7B but not 1.5B; the informed-prompt pattern (7); the receiver bounds (9); and replication (12). The YES/NO monitor expectation (5) was missed at 1.5B and 3B, and its weak 7B support did not replicate.
 
 ## Code and data
 
@@ -371,4 +410,4 @@ Table E3. Paraphrase drop in accuracy, `lexical` minus `semantic`, paired bootst
 
 ## LLM usage statement
 
-We used Claude (Anthropic) as a coding and analysis assistant. It helped implement the experiment pipeline, the analysis code and the Colab notebook. After the runs, it computed the diagnostic breakdowns and exploratory analyses in Sections 4.2–4.4, implemented the follow-up experiments of Section 3.8, drafted a results report (`REPORT.md`) and drafted the results, discussion and conclusion sections of this write-up from that report. The authors designed the study, wrote the pre-registered expectations before any run, and ran all experiments. [Before submission: state which numbers the authors re-checked against `trials.jsonl`, and that the final text was reviewed and rewritten by the authors.]
+We used Claude (Anthropic) as a coding and analysis assistant. It helped implement the experiment pipeline, the analysis code and the Colab notebook. After the runs, it computed the diagnostic breakdowns and exploratory analyses in Sections 4.2–4.4, implemented and analysed the follow-up experiments of Sections 3.8 and 4.6, drafted a results report (`REPORT.md`) and drafted the results, discussion and conclusion sections of this write-up from that report. The authors designed the study, wrote the pre-registered expectations before any run, and ran all experiments. [Before submission: state which numbers the authors re-checked against `trials.jsonl`, and that the final text was reviewed and rewritten by the authors.]

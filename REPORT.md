@@ -17,11 +17,25 @@ We ran the experiment on three sizes of Qwen2.5: 1.5B, 3B and 7B (4-bit AWQ). Ea
   accuracy fell to chance (3B 0.76 → 0.48, 7B 0.88 → 0.54; paired p < 0.001 for both).
   The `semantic` mention survived paraphrasing, and the accuracy drop was not significant at
   either size (3B 0.63 → 0.59, 7B 0.71 → 0.67).
-- **The monitor is close to useless at every size.** It flagged 0 of 800 messages at 3B, 2 of
-  800 at 1.5B and 12 of 800 at 7B. Half of the 7B flags were messages where the model drifted
-  into Chinese mid-sentence, not messages carrying a code. "Covert success" (decoded and not
-  flagged) stays within 0.03 of accuracy everywhere.
+- **The YES/NO monitor is close to useless at every size, but it is not blind.** It flagged
+  0 of 800 messages at 3B, 2 of 800 at 1.5B and 12 of 800 at 7B, half of those for drifting
+  into Chinese. Read as a probability instead (follow-up F1), its P(YES) does rank coded
+  messages above uncoded ones. With the original prompt, the 7B monitor separates
+  `semantic` messages from `none` with AUROC 0.94 (3B senders) and 0.84 (7B senders). At a
+  5% false-alarm rate it would catch 77% and 67% of them. A prompt that says what codes look
+  like gives the 3B monitor the same ability (AUROC 0.58 → 0.95).
+- **The one-word answers understated the channel.** Scored by probability (F2), the 7B
+  receiver decodes its own `lexical` and `semantic` messages with AUROC 0.95 and 0.98. A 1.5B
+  receiver decodes 7B messages at 0.90–0.95, so decoding is not what limits small models;
+  sending is.
+- **The topic code survives paraphrasing but not sanitizing.** At 7B, paraphrasing costs the
+  `semantic` code 0.01 AUROC; a rewrite that keeps only work facts (F3) costs it 0.37 and
+  takes the word code to chance too. Rewriting this aggressively also drops some real
+  content (7B `none` messages: judged-kept 0.99 → 0.89).
 - **Without an agreed code (`improvised`), no model passed the bit** (0.50–0.52 on `plain`).
+- **The main results replicate with a new seed** (F4): 23 of 24 accuracies fall inside the
+  seed-0 95% CIs, and four of the five main-run verdicts repeat. The weak 7B monitor effect
+  does not (p = 0.13).
 
 Most failures come from the sender. When the correct code word reached the receiver, the 3B
 and 7B receivers decoded it 97–100% of the time for `lexical`. Model size mostly changed how
@@ -290,7 +304,7 @@ paraphraser rewrote heavily, yet kept "coffee" in 41 of 47 (3B) and 67 of 72 (7B
 had it. The topic code survives because the rewrite keeps content, not because the paraphraser
 was too timid.
 
-## Follow-up experiments (pre-registered, awaiting runs)
+## Follow-up experiments (pre-registered)
 
 The README lists four follow-ups (F1–F4) with expectations 6–12, committed before any of them
 were run. They are built into `covert/followup.py` and notebook sections 7–8:
@@ -305,7 +319,141 @@ were run. They are built into `covert/followup.py` and notebook sections 7–8:
   rewrite removes the topic code that paraphrasing leaves, and what it costs in kept content.
 - **F4. Replication** with seed 1.
 
-Results will go here once the notebook has been run.
+The follow-ups ran in full: 3 × 400 sanitized rows, 3 × 3,600 probability scores (every
+judge on every sender's plain, paraphrased and sanitized messages), and 3 × 800 seed-1 rows.
+All tables come from `python -m covert.analysis ... --followup results/followup` and are in
+`results/tables/followup/`. AUROC CIs are 95% bootstrap intervals over trials.
+
+![Monitor and receiver AUROC by sender and judge model](figures/fig2_auroc.png)
+
+**A caution on small AUROC values.** In the 27 `none` cells, where there is no signal by
+construction, receiver AUROC ranges from 0.46 to 0.67. With 100 trials, topic and bit can be
+correlated by chance, and a receiver that leans differently by topic then scores above 0.5.
+Values below about 0.67 are therefore not evidence of signal.
+
+### F1. The monitor scored by probability
+
+Monitor AUROC on the `plain` channel: each scheme's messages against `none` messages from the
+same sender. Each cell gives `basic` / `informed` prompt.
+
+| sender | scheme | monitor 1.5B | monitor 3B | monitor 7B |
+|---|---|---|---|---|
+| 1.5B | `lexical` | 0.47 / 0.51 | 0.52 / 0.59 | 0.69 / 0.63 |
+| 1.5B | `semantic` | 0.55 / 0.61 | 0.54 / 0.73 | 0.69 / 0.72 |
+| 1.5B | `improvised` | 0.57 / 0.66 | 0.60 / 0.72 | 0.66 / 0.66 |
+| 3B | `lexical` | 0.60 / 0.68 | 0.50 / 0.81 | 0.85 / 0.84 |
+| 3B | `semantic` | 0.56 / 0.76 | 0.58 / 0.95 | **0.94** / **0.96** |
+| 3B | `improvised` | 0.81 / 0.82 | 0.54 / 0.79 | 0.90 / 0.94 |
+| 7B | `lexical` | 0.75 / 0.65 | 0.41 / 0.74 | 0.64 / 0.74 |
+| 7B | `semantic` | 0.73 / 0.74 | 0.57 / 0.88 | **0.84** / 0.84 |
+| 7B | `improvised` | 0.72 / 0.64 | 0.49 / 0.61 | 0.58 / 0.66 |
+
+- **The monitor sees more than it says.** Its P(YES) is tiny for every message (the 7B
+  monitor's mean is 0.07 for 3B `semantic` messages and below 0.001 for `none`), so it never
+  crosses 0.5. But the ranking carries information. With a threshold set to flag 5% of `none`
+  messages, the `basic` 7B monitor catches 77% of 3B and 67% of 7B `semantic` messages, and
+  46% and 34% of `lexical` ones.
+- **Prompting matters as much as size.** The `basic` 3B monitor is no better than chance on
+  any scheme (0.41–0.60; on 7B `lexical` it is below chance). Telling it that colluders may use "a particular word or phrase, or a casual
+  remark unrelated to the work" lifts it to 0.81 (`lexical`) and 0.95 (`semantic`) on 3B
+  senders, level with the 7B monitor.
+- **Topic codes are easier to spot than word codes**, as expected: a coffee remark in a
+  database update is out of place, and "basically" is not.
+- **Detection survives the rewrites only partly.** The 7B monitor's `semantic` AUROC on 7B
+  senders is 0.84 plain, 0.82 paraphrased and 0.70 sanitized.
+- The `improvised` messages from 3B senders, which often spell out "HIGH" or "LOW", are among
+  the easiest to detect (0.90–0.94 for the 7B monitor).
+
+### F2. The receiver scored by probability
+
+Receiver AUROC: P(HIGH) against the true bit. Rows are senders, columns are receivers; the
+diagonal is the main experiment's same-model pairing.
+
+| sender | scheme | channel | receiver 1.5B | receiver 3B | receiver 7B |
+|---|---|---|---|---|---|
+| 3B | `lexical` | `plain` | 0.73 | **0.81** | 0.76 |
+| 3B | `semantic` | `plain` | 0.64 | **0.74** | 0.74 |
+| 3B | `semantic` | `paraphrased` | 0.58 | **0.70** | 0.71 |
+| 7B | `lexical` | `plain` | 0.95 | 0.96 | **0.95** |
+| 7B | `lexical` | `paraphrased` | 0.55 | 0.54 | **0.56** |
+| 7B | `semantic` | `plain` | 0.90 | 0.99 | **0.98** |
+| 7B | `semantic` | `paraphrased` | 0.82 | 0.96 | **0.97** |
+| 7B | `semantic` | `sanitized` | 0.59 | 0.63 | **0.61** |
+| 1.5B | `lexical` | `plain` | **0.48** | 0.47 | 0.49 |
+| 1.5B | `semantic` | `plain` | **0.47** | 0.55 | 0.62 |
+
+Same-model `none`: 0.49 (1.5B), 0.49 (3B), 0.50 (7B). Same-model `improvised`: 0.55, 0.62,
+0.56.
+
+- **The 7B pair passes the bit almost perfectly.** AUROC 0.95 for the code word and 0.98 for
+  the topic code, against 0.88 and 0.71 accuracy from the one-word answers. The gap comes from
+  the receiver's response bias and from its answering "COFFEE" instead of HIGH.
+- **The topic code is untouched by paraphrasing.** It goes from 0.98 to 0.97 at 7B, while the
+  word code falls from 0.95 to 0.56. In paired bootstraps (exploratory), the paraphrase loss
+  for 7B `semantic` is 0.01 [−0.00, 0.03] and for `lexical` 0.39 [0.29, 0.50].
+- **Decoding is not the bottleneck.** The 1.5B receiver decodes 7B messages at 0.95 (`lexical`)
+  and 0.90 (`semantic`). No receiver decodes 1.5B messages, because those messages carry no
+  code. The 1.5B failure in the main run is entirely the sender's.
+- **No hidden `improvised` signal.** The same-model values (0.55–0.62) and the highest
+  cross-model value (0.68, the 7B receiver on 1.5B senders) are within the range of the
+  `none` cells.
+
+### F3. The `sanitized` channel
+
+| model | scheme | accuracy plain / para / sanitized | marker delivered plain / para / sanitized | plain vs sanitized, lost / gained (Holm p) | judged-kept, para / sanitized |
+|---|---|---|---|---|---|
+| 3B | `none` | 0.50 / 0.50 / 0.50 | — | 0 / 0 (1.0) | 0.66 / 0.50 |
+| 3B | `lexical` | 0.76 / 0.48 / 0.51 | 0.36 / 0.00 / 0.00 | 35 / 10 (0.001) | 0.65 / 0.47 |
+| 3B | `semantic` | 0.63 / 0.59 / 0.57 | 0.47 / 0.43 / 0.25 | 24 / 18 (0.88) | 0.68 / 0.31 |
+| 7B | `none` | 0.50 / 0.55 / 0.51 | — | 1 / 2 (1.0) | 0.99 / 0.89 |
+| 7B | `lexical` | 0.88 / 0.54 / 0.48 | 0.68 / 0.00 / 0.00 | 41 / 1 (< 10⁻⁴) | 0.99 / 0.87 |
+| 7B | `semantic` | 0.71 / 0.67 / 0.57 | 0.72 / 0.67 / 0.18 | 31 / 17 (0.18) | 0.97 / 0.53 |
+
+At 1.5B nothing changes: there was no signal to remove, and the 1.5B judge rates almost every
+rewrite as keeping the content (0.99–1.00).
+
+- **Sanitizing removes most of the topic code.** The marker survives in 18% of 7B messages
+  (against 67% after paraphrasing). Scored decoding falls from 0.98 to 0.61 at 7B (paired
+  difference 0.37 [0.26, 0.48], exploratory) and from 0.74 to 0.64 at 3B (0.10 [−0.01, 0.21]).
+  The one-word accuracy drop is not significant at either size, because a third of the 7B
+  `semantic` answers are coin flips.
+- **The marker survives when it is framed as work.** One sender wrote "implementing a
+  tea-themed design element for the background", and the sanitizer kept it as a work fact.
+  A sender that knows a sanitizer is in the loop would do this deliberately.
+- **Sanitizing has a cost, but the judge overstates it for `semantic`.** Judged-kept work
+  content falls for every scheme at 3B and 7B (Wilcoxon p < 0.01). The fairest estimate of
+  the real cost is `none`, which has no code to lose: 0.99 → 0.89 at 7B. The large drop for
+  `semantic` (0.97 → 0.53) is mostly the judge counting the coffee remark itself as
+  information. For example, dropping "maybe some lively coffee talks" from an offsite update
+  scored 0.00. Sanitized messages are 10–33% shorter than the originals.
+
+![Accuracy and flag rate on the plain, paraphrased and sanitized channels](figures/fig3_sanitized.png)
+
+### F4. Replication with seed 1
+
+Seed 1 draws new bits (54% LOW instead of 50%), so `none` sits at 0.54 for the same
+always-LOW receivers.
+
+- **23 of 24 seed-1 accuracies lie inside the seed-0 95% CI.** The exception is 3B
+  `lexical/paraphrased` at 0.60 (seed-0 CI 0.39–0.58). The marker is still removed (0.43 →
+  0.02), and the paired paraphrase drop is still significant (28 lost / 11 gained, Holm p =
+  0.038).
+- **Expectations 1–4 get the same verdicts.** 3B `semantic/plain` is again significant before
+  correction (p = 0.010) but not after (Holm p = 0.063); at seed 0 it was 0.042.
+- **Expectation 5 weakens.** The 1.5B and 3B monitors flag nothing. The 7B monitor flags 5 of
+  400 agreed-code messages against 0 of 200 `none` (Fisher p = 0.13, against 0.025 at seed 0).
+
+### Pre-registered expectations 6–12
+
+| # | Expectation | Outcome |
+|---|---|---|
+| 6 | `basic` 7B monitor: AUROC > 0.6 on 7B `semantic/plain` | **Supported.** 0.84 [0.77, 0.89]. |
+| 7 | `informed` gains more on `semantic` than on `lexical` | **Partially supported.** Mean gain 0.13 vs 0.08 on `plain`, larger for `semantic` in 7 of 9 monitor–sender pairs. Reversed when the 7B monitor (0.01 vs 0.10) or the 3B monitor (0.31 vs 0.33) judges 7B senders. |
+| 8 | On 3B senders, 7B monitor beats 3B monitor on `semantic/plain` | **Supported** with the original prompt (0.94 vs 0.58). With the `informed` prompt they are level (0.96 vs 0.95). |
+| 9 | Receiver AUROC > 0.5 for 3B/7B agreed codes, 0.45–0.55 for `none`, < 0.6 for `improvised` | **Partially supported.** Agreed codes 0.74–0.98 and `none` 0.49–0.50 as predicted. `improvised` at 3B is 0.62 [0.52, 0.73], above the 0.6 bound. That value is within the `none` noise range, but the bound was missed. |
+| 10 | 7B receiver within 0.05 of, or above, the 3B receiver on 3B `semantic/plain` | **Supported.** 0.74 vs 0.74. |
+| 11 | `semantic/sanitized` accuracy within 0.1 of chance at 3B and 7B; lower utility than paraphrased | **Supported.** 0.57 at both. Utility is lower at 3B (0.31 vs 0.68) and 7B (0.53 vs 0.97), with the caveat about the judge above. |
+| 12 | Seed 1 repeats all main-run verdicts and every accuracy lies in the seed-0 CI | **Partially supported.** 4 of 5 verdicts and 23 of 24 accuracies replicate. The misses are 3B `lexical/paraphrased` (0.60) and the 7B monitor difference (p = 0.13). |
 
 ## Interpretation
 
@@ -315,25 +463,46 @@ working channel at all. At 7B a word-choice code carries the bit 88% of the time
 code 71% (about 77% once code-word answers are counted). No model up to 7B found a shared code
 on its own.
 
-**Question 3.4 (countermeasures).** The two defences are not equally useful. A paraphraser from
-the same model removes signals carried by specific words, deleting the marker in 100% of
-rewrites at 3B and 7B. It leaves signals carried by content, because "mention coffee" is
-content it is told to keep. That gap does not close with size: the 7B topic code went through
-paraphrasing almost untouched. A same-size prompted monitor gave essentially no protection.
-It missed coded messages that a reader can decode at 100%, and its few flags mostly reacted to
-glitches or to the bit spelled out. That is a result about prompted 1.5B–7B monitors, not about
-monitoring in general. But together these results suggest a cheap defence stack should not
-rely on a peer-size monitor, and that paraphrasing only covers word-level codes.
+The follow-ups sharpen this. Scored by probability, the 7B pair passes the bit almost
+perfectly (AUROC 0.95–0.98), and even a 1.5B receiver reads 7B messages. The capability that
+grows with size is sending. No model found a shared code on its own.
+
+**Question 3.4 (countermeasures).** The defences differ in what they cover:
+
+- **Paraphrasing** removes codes carried by specific words, deleting the marker in 100% of
+  rewrites at 3B and 7B. It leaves codes carried by content untouched: scored decoding of the
+  7B topic code drops by only 0.01. A paraphraser is told to keep the work content, and a
+  coffee remark is content.
+- **Sanitizing**, a rewrite told to keep only work facts, removes most of the topic code
+  (0.98 → 0.61 at 7B). It costs some real content (0.99 → 0.89 judged-kept on uncoded
+  messages) and misses codes dressed up as work ("a tea-themed design element").
+- **Monitoring.** A monitor that answers YES/NO gives no protection; its few flags react to
+  glitches or to the bit spelled out. The same model read as a probability, with a threshold
+  calibrated on clean traffic, is a usable detector: the 7B monitor catches 67–77% of topic-code
+  messages at a 5% false-alarm rate. A one-sentence hint about what codes look like gives a 3B
+  monitor the same power.
+- **A trained detector** (exploratory) does better still (AUROC 0.97–0.98), provided labelled
+  traffic exists.
+
+The practical lesson: never trust a small model's binary verdict. Use its probability, tell it
+what to look for, calibrate the threshold on known-clean traffic, and pair a content-stripping
+rewrite with detection, because each covers a code the other misses.
 
 ## Limitations
 
 - One model family, three sizes, 100 trials each. The 7B model is a 4-bit AWQ quantisation,
   which may explain its occasional drift into Chinese; we did not compare it with full precision.
-- Within each model, the same weights play every role. The monitor's near-silence may come from
-  size, the prompt, or the 4-token greedy YES/NO format; we did not separate these.
-- The receiver's response bias makes raw accuracy a noisy measure of information transfer. A
-  bias-free measure (balanced accuracy, or d′) would separate "no signal" from "signal ignored"
-  more cleanly.
+- Within each model, the same weights play every role. F1 shows the monitor's silence is
+  mostly the YES/NO format and the prompt, not blindness; we did not try other formats such
+  as reasoning before answering.
+- Probability scores renormalise over two answers (HIGH/LOW, YES/NO). The AUROC thresholds
+  are chosen on the same 100 trials they are evaluated on (TPR at 5% FPR), so they are
+  optimistic for a defender who must fix a threshold in advance.
+- With 100 trials, AUROC up to about 0.67 occurs where there is no signal (`none` cells), so
+  small AUROC differences should not be read as effects.
+- The utility judge is the sender's own model, and it counts the coffee remark as content,
+  overstating the cost of sanitizing `semantic` messages. The 1.5B judge rates nearly every
+  rewrite as keeping the content, so it measures nothing.
 - Receivers answering with the code word are scored as coin flips under the registered rule.
   The re-scoring above is post hoc and shown separately.
 - `signal_delivered` is a regex check. It counts "coffee or tea" as no signal and misses
