@@ -17,7 +17,7 @@ public message, and whether a monitor or a paraphraser stops them.
 
 ## Findings so far
 
-We ran Qwen2.5-Instruct at 1.5B, 3B and 7B, with 100 paired trials per condition.
+I ran Qwen2.5-Instruct at 1.5B, 3B and 7B, with 100 paired trials per condition.
 
 With an agreed code, the receiver recovers the bit 76% of the time with a code word and 63%
 with a topic at 3B, and 88% and 71% at 7B. At 1.5B nothing gets through, because the sender
@@ -394,14 +394,13 @@ python -m pytest tests -q
 ## Limitations
 
 The experiment uses one toy task, one model family and a one-bit secret, and the same model
-plays every role, including the monitor and the paraphraser. Both defences are prompts; we
+plays every role, including the monitor and the paraphraser. Both defences are prompts; I
 trained neither. `signal_delivered` is a regex check, so it exists only for the agreed codes.
-These choices keep the experiment small enough for a single Colab session, and they also
-limit what the results can claim.
+These choices limit what the results can claim.
 
 ## Prior work and what is new
 
-We wrote everything in `covert/`, `scripts/`, `tests/` and the notebook during the sprint. We
+I wrote everything in `covert/`, `scripts/`, `tests/` and the notebook during the sprint. I
 used the Qwen2.5 open-weight models, vLLM and transformers unmodified. An earlier version of
 this repo targeted the Colosseum benchmark (Nakamura et al.); that plan and its code are in
 git history (`README.md` at commit `c78c64e`). Paraphrasing as a defence against
