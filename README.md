@@ -372,6 +372,13 @@ pip install numpy scipy pandas matplotlib pytest
 python -m pytest tests -q
 ```
 
+The slides are generated too, with Node. After changing a number in the write-up, rebuild them:
+
+```bash
+npm install
+npm run slides     # writes writeup/Team-Aurora-Covert-Signalling-slides.pptx
+```
+
 ## Layout
 
 | Path | Contents |
@@ -383,6 +390,7 @@ python -m pytest tests -q
 | `covert/analysis.py` | summary table, paired tests, figures, example messages, follow-up and exploratory tables |
 | `notebooks/covert_signal.ipynb` | the Colab notebook (generated) |
 | `scripts/build_notebook.py` | inlines `covert/` into the notebook |
+| `scripts/build_slides.js` | builds the slide deck in the website's theme |
 | `tests/test_covert.py` | end-to-end test with a scripted model |
 | `tests/test_followup.py` | the follow-up passes and their analysis, with a scripted model |
 | `results/<model>/` | main-run trials, config and log for each model |

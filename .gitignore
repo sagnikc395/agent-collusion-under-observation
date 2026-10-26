@@ -10,3 +10,6 @@ venv/
 results/*
 !results/Qwen2.5-*/
 !results/followup/
+
+# Slide builder (npm run slides)
+node_modules/
